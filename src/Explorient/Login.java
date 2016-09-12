@@ -38,6 +38,7 @@ public class Login {
 	private JLabel lblUsernameWarning, lblPasswordWarning, lblLoginMessage, lblClock;
 	private Connection connection = null;
 	private JButton btnLogin;
+	private JTextField textFieldDatabaseLocation;
 
 	/**
 	 * Launch the application.
@@ -60,7 +61,7 @@ public class Login {
 	 */
 	public Login() {
 		initialize();
-		connection = sqliteConnection.dbConnector("Explorient");
+		
 	}
 
 	/**
@@ -72,32 +73,43 @@ public class Login {
 		
 		frame.setResizable(false);
 		frame.setTitle("Login");
-		logo = new ImageIcon(this.getClass().getResource("/Explorient Logo.jpg")).getImage();
+		logo = new ImageIcon(this.getClass().getResource("/Explorient Logo.png")).getImage();
 		icon = new ImageIcon(this.getClass().getResource("/Explorient Icon.jpg")).getImage();
 		frame.setIconImage(icon);
-		frame.setBounds(100, 100, 536, 315);
+		frame.setBounds(100, 100, 320, 453);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		frame.setLocationRelativeTo(null);// put this after setSize and pack
 		
 		JLabel lblUsername = new JLabel("Username:");
-		lblUsername.setFont(new Font("Tahoma", Font.BOLD, 12));
-		lblUsername.setBounds(10, 38, 94, 29);
+		lblUsername.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblUsername.setBounds(10, 130, 80, 20);
 		frame.getContentPane().add(lblUsername);
 		
 		JLabel lblPassword = new JLabel("Password:");
-		lblPassword.setFont(new Font("Tahoma", Font.BOLD, 12));
-		lblPassword.setBounds(10, 78, 94, 36);
+		lblPassword.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblPassword.setBounds(10, 180, 80, 20);
 		frame.getContentPane().add(lblPassword);
 		
 		textFieldUsername = new JTextField();
-		textFieldUsername.setBounds(98, 43, 122, 20);
+		textFieldUsername.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		textFieldUsername.setBounds(10, 150, 290, 23);
 		frame.getContentPane().add(textFieldUsername);
 		textFieldUsername.setColumns(10);
 		
 		btnLogin = new JButton("Login");
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				
+				if(!textFieldDatabaseLocation.getText().equals(""))
+				{
+					connection = sqliteConnection.dbConnector(textFieldDatabaseLocation.getText()+"\\Explorient.sqlite");
+				}
+				else
+				{
+					connection = sqliteConnection.dbConnector("Explorient");
+				}
+				
 				lblUsernameWarning.setText("");
 				lblPasswordWarning.setText("");
 				if(textFieldUsername.getText().trim().equals("")){
@@ -157,12 +169,12 @@ public class Login {
 			}
 		});
 		btnLogin.setFont(new Font("Tahoma", Font.BOLD, 12));
-		btnLogin.setBounds(98, 135, 89, 23);
+		btnLogin.setBounds(105, 250, 100, 45);
 		frame.getContentPane().add(btnLogin);
 		
 		JLabel labelLogo = new JLabel("");
 		labelLogo.setIcon(new ImageIcon(logo));
-		labelLogo.setBounds(263, 38, 243, 179);
+		labelLogo.setBounds(-45, 0, 365, 105);
 		frame.getContentPane().add(labelLogo);
 		
 		passwordField = new JPasswordField();
@@ -174,27 +186,37 @@ public class Login {
 				}
 			}
 		});
-		passwordField.setBounds(98, 87, 122, 20);
+		passwordField.setBounds(10, 200, 290, 23);
 		frame.getContentPane().add(passwordField);
 		
 		lblUsernameWarning = new JLabel("");
-		lblUsernameWarning.setBounds(98, 62, 155, 14);
+		lblUsernameWarning.setBounds(74, 175, 155, 14);
 		frame.getContentPane().add(lblUsernameWarning);
 		
 		lblPasswordWarning = new JLabel("");
-		lblPasswordWarning.setBounds(98, 110, 155, 14);
+		lblPasswordWarning.setBounds(74, 225, 155, 14);
 		frame.getContentPane().add(lblPasswordWarning);
 		
 		lblLoginMessage = new JLabel("");
 		lblLoginMessage.setHorizontalAlignment(SwingConstants.CENTER);
 		lblLoginMessage.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		lblLoginMessage.setBounds(44, 169, 199, 34);
+		lblLoginMessage.setBounds(10, 299, 290, 20);
 		frame.getContentPane().add(lblLoginMessage);
 		
 		lblClock = new JLabel("");
 		lblClock.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblClock.setBounds(263, 11, 243, 14);
 		frame.getContentPane().add(lblClock);
+		
+		JLabel lblLocalDatabaseLocation = new JLabel("Local Database Location:");
+		lblLocalDatabaseLocation.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblLocalDatabaseLocation.setBounds(10, 330, 150, 20);
+		frame.getContentPane().add(lblLocalDatabaseLocation);
+		
+		textFieldDatabaseLocation = new HintTextField("e.g = Y:\\Users\\Richard\\Dropbox\\Database");
+		textFieldDatabaseLocation.setBounds(10, 355, 290, 25);
+		frame.getContentPane().add(textFieldDatabaseLocation);
+		textFieldDatabaseLocation.setColumns(10);
 		
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
