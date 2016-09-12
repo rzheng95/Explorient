@@ -6,6 +6,7 @@ public class sqliteConnection
 {
 	
 	Connection conn = null;
+	// can you see this?
 	
 	
 	public static Connection dbConnector(String db)
