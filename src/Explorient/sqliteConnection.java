@@ -7,7 +7,7 @@ public class sqliteConnection
 	
 	Connection conn = null;
 	// can you see this?
-	
+	// yes i can
 	
 	public static Connection dbConnector(String db)
 	{
