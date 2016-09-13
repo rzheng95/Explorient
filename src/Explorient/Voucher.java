@@ -58,9 +58,9 @@ public class Voucher extends JFrame
 	private JTable tableVoucher;
 	private Image icon;
 	private JTable tablePassengers;
-	private JComboBox comboBoxHotelCode, comboBoxType;
+	private JComboBox comboBoxHotelCode, comboBoxType, comboBoxManifest;
 	private JSpinner spinnerPassenger, spinnerNight;
-
+	private JXDatePicker datePickerCheckIn;
 	/**
 	 * Launch the application.
 	 */
@@ -83,7 +83,7 @@ public class Voucher extends JFrame
 	 */
 	public Voucher() {
 		try{UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}catch(Exception e){}
-		connection = sqliteConnection.dbConnector("Y:\\Users\\Richard\\Dropbox\\Database\\Explorient.sqlite");
+		connection = sqliteConnection.dbConnector("C:\\Users\\Richard\\Dropbox\\Database\\Explorient.sqlite");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1236, 745);
 		//setResizable(false);
@@ -176,6 +176,12 @@ public class Voucher extends JFrame
 					comboBoxType.setSelectedItem(rs.getString("Type"));
 					comboBoxHotelCode.setSelectedItem(rs.getString("HotelCode"));
 					spinnerPassenger.setValue(rs.getInt("NumOfPax"));
+					spinnerNight.setValue(rs.getInt("NumOfNight"));
+					// Date picker
+					//datePickerCheckIn.
+					comboBoxManifest.setSelectedItem(rs.getString("Manifest"));
+					
+					
 					
 
 
@@ -215,7 +221,7 @@ public class Voucher extends JFrame
 		comboBoxType.setBounds(90, 50, 110, 23);
 		getContentPane().add(comboBoxType);
 		
-		JXDatePicker datePickerCheckIn = new JXDatePicker();
+		datePickerCheckIn = new JXDatePicker();
 		datePickerCheckIn.getEditor().setFont(new Font("Tahoma", Font.PLAIN, 11));
 		datePickerCheckIn.setBounds(90, 210, 110, 20);
 		getContentPane().add(datePickerCheckIn);
@@ -276,7 +282,7 @@ public class Voucher extends JFrame
 		lblManifest.setBounds(10, 250, 80, 20);
 		getContentPane().add(lblManifest);
 		
-		JComboBox comboBoxManifest = new JComboBox();
+		comboBoxManifest = new JComboBox();
 		comboBoxManifest.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		comboBoxManifest.setEditable(true);
 		comboBoxManifest.setBounds(90, 252, 110, 23);
