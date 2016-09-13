@@ -103,7 +103,7 @@ public class CreateNewBooking extends JFrame {
 	 */
 	public CreateNewBooking(){	
 		try{UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}catch(Exception e){}
-		connection = sqliteConnection.dbConnector("Explorient");
+		connection = sqliteConnection.dbConnector("Y:\\Users\\Richard\\Dropbox\\Database\\Explorient.sqlite");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 520, 720);
 		//setResizable(false);

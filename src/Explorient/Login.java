@@ -28,6 +28,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.SwingConstants;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 public class Login {
 
@@ -103,11 +108,22 @@ public class Login {
 				
 				if(!textFieldDatabaseLocation.getText().equals(""))
 				{
+					// checking if Explorient.sqlite exists in the provided directory
+					boolean check = new File(textFieldDatabaseLocation.getText(), "Explorient.sqlite").exists();
+					if(!check){
+						lblLoginMessage.setText("Invaild Directory! Database Cannot Be Found");
+						lblLoginMessage.setForeground(Color.red);
+						return;
+					}
 					connection = sqliteConnection.dbConnector(textFieldDatabaseLocation.getText()+"\\Explorient.sqlite");
+					
+
 				}
 				else
 				{
-					connection = sqliteConnection.dbConnector("Explorient");
+					lblLoginMessage.setText("Please Provide Database Directory.");
+					lblLoginMessage.setForeground(Color.red);
+					return;
 				}
 				
 				lblUsernameWarning.setText("");
@@ -208,7 +224,7 @@ public class Login {
 		lblClock.setBounds(263, 11, 243, 14);
 		frame.getContentPane().add(lblClock);
 		
-		JLabel lblLocalDatabaseLocation = new JLabel("Local Database Location:");
+		JLabel lblLocalDatabaseLocation = new JLabel("Database Directory:");
 		lblLocalDatabaseLocation.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		lblLocalDatabaseLocation.setBounds(10, 330, 150, 20);
 		frame.getContentPane().add(lblLocalDatabaseLocation);
@@ -263,5 +279,16 @@ public class Login {
 			}
 		};
 		clock.start();
-	}
+	}	
 }
+
+
+
+
+
+
+
+
+
+
+
