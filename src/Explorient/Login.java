@@ -28,11 +28,15 @@ import java.awt.event.ActionEvent;
 import javax.swing.SwingConstants;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Login {
 
@@ -43,7 +47,7 @@ public class Login {
 	private JLabel lblUsernameWarning, lblPasswordWarning, lblLoginMessage, lblClock;
 	private Connection connection = null;
 	private JButton btnLogin;
-	private JTextField textFieldDatabaseLocation;
+	private HintTextField textFieldDatabaseLocation;
 
 	/**
 	 * Launch the application.
@@ -67,6 +71,26 @@ public class Login {
 	public Login() {
 		initialize();
 		
+		// if Directory.txt exists, auto fill the directory to the textFieldDatabaseLocation
+		boolean dirExist = new File(System.getProperty("user.dir"), "Directory.txt").exists();
+		if(dirExist)
+		{
+			try{
+				FileReader fr = new FileReader("Directory.txt");
+				BufferedReader br = new BufferedReader(fr);
+				
+				String str;
+				while((str = br.readLine()) != null)
+				{
+					textFieldDatabaseLocation.setDir(str);
+				}					
+				
+				br.close();
+			}catch(IOException e1){
+				JOptionPane.showMessageDialog(null, "File not found");
+			}
+		}
+			
 	}
 
 	/**
@@ -75,6 +99,8 @@ public class Login {
 	private void initialize() {
 		try{UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}catch(Exception e){}
 		frame = new JFrame();
+		
+
 		
 		frame.setResizable(false);
 		frame.setTitle("Login");
@@ -117,7 +143,48 @@ public class Login {
 					}
 					connection = sqliteConnection.dbConnector(textFieldDatabaseLocation.getText()+"\\Explorient.sqlite");
 					
-
+					
+					boolean dirExist = new File(System.getProperty("user.dir"), "Directory.txt").exists();
+					// if Directory.txt doesn't exist, create the file and save the user entered directory
+					if(!dirExist) {
+						try{
+							FileWriter fw = new FileWriter("Directory.txt");
+							PrintWriter pw = new PrintWriter(fw);
+							
+							String x = textFieldDatabaseLocation.getText();					
+							pw.println(x);
+							
+							pw.close();
+						}catch(IOException e){
+							JOptionPane.showMessageDialog(null, e);
+						}
+					}
+					else // it exists
+					{
+						try{
+							FileReader fr = new FileReader("Directory.txt");
+							BufferedReader br = new BufferedReader(fr);
+							// However, user moved the Database to another folder, then save the new directory provided by user
+							// this will override the old directory
+							if(!br.readLine().equals(textFieldDatabaseLocation.getText()))
+							{							
+								try{
+									FileWriter fw = new FileWriter("Directory.txt");
+									PrintWriter pw = new PrintWriter(fw);
+									
+									String x = textFieldDatabaseLocation.getText();					
+									pw.println(x);
+									
+									pw.close();
+								}catch(IOException e){
+									JOptionPane.showMessageDialog(null, e);
+								}
+							}
+							br.close();
+						}catch(IOException e1){
+							JOptionPane.showMessageDialog(null, "File not found");
+						}
+					}		
 				}
 				else
 				{

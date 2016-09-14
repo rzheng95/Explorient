@@ -6,6 +6,7 @@ import java.awt.EventQueue;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Date;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -61,6 +62,7 @@ public class Voucher extends JFrame
 	private JComboBox comboBoxHotelCode, comboBoxType, comboBoxManifest;
 	private JSpinner spinnerPassenger, spinnerNight;
 	private JXDatePicker datePickerCheckIn;
+	private JTextArea textAreaDescriptions;
 	/**
 	 * Launch the application.
 	 */
@@ -83,7 +85,7 @@ public class Voucher extends JFrame
 	 */
 	public Voucher() {
 		try{UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}catch(Exception e){}
-		connection = sqliteConnection.dbConnector("C:\\Users\\Richard\\Dropbox\\Database\\Explorient.sqlite");
+		connection = sqliteConnection.dbConnector("Y:\\Users\\Richard\\Dropbox\\Database\\Explorient.sqlite");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1236, 745);
 		//setResizable(false);
@@ -178,8 +180,13 @@ public class Voucher extends JFrame
 					spinnerPassenger.setValue(rs.getInt("NumOfPax"));
 					spinnerNight.setValue(rs.getInt("NumOfNight"));
 					// Date picker
-					//datePickerCheckIn.
+					// JOptionPane.showMessageDialog(null, "The day is "+d.getDate()+" Year is "+(d.getYear()+1900)+" the month is "+(d.getMonth()+1));
+					//String date = rs.getString("Date");
+					String[] dateArr = rs.getString("Date").split("/");
+					Date d = new Date((Integer.parseInt(dateArr[2])-1900),(Integer.parseInt(dateArr[0])-1),Integer.parseInt(dateArr[1]));
+					datePickerCheckIn.setDate(d);
 					comboBoxManifest.setSelectedItem(rs.getString("Manifest"));
+					textAreaDescriptions.setText(rs.getString("Description"));
 					
 					
 					
@@ -247,7 +254,7 @@ public class Voucher extends JFrame
 		lblDescriptions.setBounds(10, 290, 80, 20);
 		getContentPane().add(lblDescriptions);
 		
-		JTextArea textAreaDescriptions = new JTextArea();
+		textAreaDescriptions = new JTextArea();
 		textAreaDescriptions.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		Border border = BorderFactory.createLineBorder(Color.black);
 		textAreaDescriptions.setBorder(border);
