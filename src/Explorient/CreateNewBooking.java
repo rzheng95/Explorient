@@ -9,6 +9,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+
+import org.jdesktop.swingx.JXDatePicker;
+
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -34,6 +37,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.JEditorPane;
@@ -59,7 +63,7 @@ public class CreateNewBooking extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private Connection connection = null;
-	private int booking, voucher, passenger;
+	private int booking, passenger;
 	private JPanel contentPane;
 	private Image icon;
 	private JTextField textFieldAgentName;
@@ -67,12 +71,10 @@ public class CreateNewBooking extends JFrame {
 	private JTextField textFieldTelephone;
 	private JTextField textFieldCommission;
 	private JTextField textFieldAttention;
-	private JTextField textFieldDeparture;
 	private JTextField textFieldPaxNames;
-	private JComboBox comboBoxNumOfRooms, comboBoxNumOfPax;
+	private JComboBox comboBoxNumOfRooms, comboBoxNumOfPax, comboBoxGateway;
 	private JTable table;
 	private DefaultTableModel model;
-	private JTextField textFieldGateway;
 	private JTextField textFieldCity;
 	private JTextField textFieldCountry;
 	private JTextField textFieldZipcode;
@@ -81,6 +83,7 @@ public class CreateNewBooking extends JFrame {
 	private ArrayList<String> agentList;;
 	private AutocompleteJComboBox comboBoxAgentCode;
 	private JTextField textFieldState;
+	private JXDatePicker datePickerDeparture;
 
 	/**
 	 * Launch the application.
@@ -201,6 +204,7 @@ public class CreateNewBooking extends JFrame {
 		lblNumOfRoom.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		
 		comboBoxNumOfRooms = new JComboBox();
+		comboBoxNumOfRooms.setEditable(true);
 		comboBoxNumOfRooms.setBounds(100, 370, 200, 23);
 		comboBoxNumOfRooms.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		comboBoxNumOfRooms.setModel(new DefaultComboBoxModel(new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"}));
@@ -210,6 +214,7 @@ public class CreateNewBooking extends JFrame {
 		lblOfPax.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		
 		comboBoxNumOfPax = new JComboBox();
+		comboBoxNumOfPax.setEditable(true);
 		comboBoxNumOfPax.setBounds(100, 400, 200, 23);
 		comboBoxNumOfPax.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		comboBoxNumOfPax.setModel(new DefaultComboBoxModel(new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"}));
@@ -218,10 +223,9 @@ public class CreateNewBooking extends JFrame {
 		lblDeparture.setBounds(10, 430, 90, 20);
 		lblDeparture.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		
-		textFieldDeparture = new JTextField();
-		textFieldDeparture.setBounds(100, 430, 200, 23);
-		textFieldDeparture.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		textFieldDeparture.setColumns(10);
+		datePickerDeparture = new JXDatePicker();
+		datePickerDeparture.setBounds(100, 430, 200, 23);
+		
 		
 		JLabel lblPassengerNames = new JLabel("Pax names:");
 		lblPassengerNames.setBounds(10, 490, 90, 20);
@@ -266,7 +270,7 @@ public class CreateNewBooking extends JFrame {
 				}
 				
 /*
-				// grab the latest booking number
+				// grab the largest booking number
 				try{				
 					String query = "SELECT MAX(Booking) FROM IDs";			
 					PreparedStatement pst = connection.prepareStatement(query);
@@ -283,25 +287,25 @@ public class CreateNewBooking extends JFrame {
 				{
 					lblPassengerWarning.setText("");
 					btnFinalize.setBackground(Color.blue);
-					// fetch data from IDs
+					// fetch data from IDs, grab booking and passenger # from IDs
 					try{				
 						String query = "select * from IDs where EXPID=1 ";
 						Statement stmt = connection.createStatement();
 						ResultSet rs = stmt.executeQuery(query);	
 	
 						booking = rs.getInt("Booking");	
-						voucher = rs.getInt("Voucher");
+						booking++; // increment booking #
 						passenger = rs.getInt("Passenger");	
 						stmt.close();
 						rs.close();
 					}catch(Exception e1){
 						e1.printStackTrace();
 					}	
-					booking++; // increment booking #
+
 					
 					// create a new booking 
 					try{	
-						String query = "CREATE TABLE if not exists\""+"B"+booking+"\" (\"VoucherID\" TEXT PRIMARY KEY  NOT NULL  UNIQUE , \"Type\" TEXT, \"NumOfPax\" INTEGER, \"NumOfNight\" INTEGER, \"HotelCode\" TEXT, \"RoomType\" TEXT, \"LandServiceCode\" TEXT, \"Date\" TEXT, \"Manifest\" TEXT, \"Description\" TEXT)";
+						String query = "CREATE TABLE if not exists\""+"B"+booking+"\" (\"VoucherID\" TEXT PRIMARY KEY  NOT NULL  UNIQUE , \"Type\" TEXT, \"NumOfPax\" INTEGER, \"NumOfNight\" INTEGER, \"RoomType\" TEXT, \"Date\" TEXT, \"Manifest\" TEXT, \"Description\" TEXT)";
 						PreparedStatement pst = connection.prepareStatement(query);
 						pst.execute();								
 						JOptionPane.showMessageDialog(null, "B"+booking+" has been created.");
@@ -321,11 +325,13 @@ public class CreateNewBooking extends JFrame {
 						String query = "Update IDs set EXPID='"+1+"' ,Booking='"+booking+"' ,Passenger='"+passenger+"' where EXPID='"+1+"'  ";
 						PreparedStatement pst = connection.prepareStatement(query);
 						pst.execute();					
-						JOptionPane.showMessageDialog(null, "Data Updated");					
+						//JOptionPane.showMessageDialog(null, "Booking and passenger IDs Updated");					
 						pst.close();
 						}catch(Exception e1){
 						e1.printStackTrace();
 					}
+					
+					clearAll();
 				}
 				else
 				{
@@ -353,19 +359,6 @@ public class CreateNewBooking extends JFrame {
 		JLabel lblGateway = new JLabel("Gateway:");
 		lblGateway.setBounds(10, 460, 90, 20);
 		lblGateway.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		
-		textFieldGateway = new JTextField();
-		textFieldGateway.setBounds(100, 460, 200, 23);
-		textFieldGateway.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		textFieldGateway.setColumns(10);
-		
-		JButton btnNewButton = new JButton("Print Passengers");
-		btnNewButton.setBounds(15, 611, 119, 23);
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-
-			}
-		});
 		
 		JButton btnDelete = new JButton("Delete");
 		btnDelete.setBounds(427, 540, 63, 23);
@@ -407,16 +400,14 @@ public class CreateNewBooking extends JFrame {
 		contentPane.add(lblPassengerNames);
 		contentPane.add(lblDeparture);
 		contentPane.add(textFieldPaxNames);
-		contentPane.add(textFieldDeparture);
 		contentPane.add(btnFinalize);
 		contentPane.add(scrollPane);
 		contentPane.add(lblGateway);
-		contentPane.add(textFieldGateway);
-		contentPane.add(btnNewButton);
 		contentPane.add(btnDelete);
 		contentPane.add(lblCity);
 		contentPane.add(lblCountry);
 		contentPane.add(lblZipcode);
+		contentPane.add(datePickerDeparture);
 		
 		textFieldCity = new JTextField();
 		textFieldCity.setFont(new Font("Tahoma", Font.PLAIN, 12));
@@ -448,7 +439,8 @@ public class CreateNewBooking extends JFrame {
 					String query = "CREATE TABLE if not exists \"PaxInfos\" (\"PassengerID\" TEXT PRIMARY KEY  NOT NULL  UNIQUE , \"BookingNumber\" INTEGER, \"Agent\" TEXT, \"Firstname\" TEXT, \"Middlename\" TEXT, \"Lastname\" TEXT,  \"Departure\" TEXT, \"Gateway\" TEXT, \"PhoneNumber\" TEXT, \"Street\" TEXT, \"City\" TEXT, \"State\" TEXT, \"Country\" TEXT, \"Zipcode\" TEXT)";
 					PreparedStatement pst = connection.prepareStatement(query);
 					pst.execute();								
-					JOptionPane.showMessageDialog(null, "PaxInfos has been created.");
+					
+Pane.showMessageDialog(null, "PaxInfos has been created.");
 					//refreshTable("B"+textFieldBookingNumber.getText());
 					pst.close();
 				}catch(Exception e1){
@@ -528,6 +520,13 @@ public class CreateNewBooking extends JFrame {
 		lblAgentWarning.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		lblAgentWarning.setBounds(10, 310, 290, 20);
 		contentPane.add(lblAgentWarning);
+		
+		comboBoxGateway = new JComboBox();
+		comboBoxGateway.setModel(new DefaultComboBoxModel(new String[] {"Land Only"}));
+		comboBoxGateway.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		comboBoxGateway.setEditable(true);
+		comboBoxGateway.setBounds(100, 460, 200, 23);
+		contentPane.add(comboBoxGateway);
 
 			
 	}
@@ -564,11 +563,12 @@ public class CreateNewBooking extends JFrame {
 			{
 				String firstName = passengerTable[i][1].toString();
 				String lastName = passengerTable[i][0].toString();
+				Date d = datePickerDeparture.getDate();
 				try{					
 					String query = "insert into PaxInfos (PassengerID, BookingNumber, Agent, Firstname, Middlename, Lastname, Departure, Gateway) values (?,?,?,?,?,?,?,?)";
 					PreparedStatement pst = connection.prepareStatement(query);
 					passenger++;
-					pst.setString(1, "EXP"+passenger);
+					pst.setString(1, "EXPP"+passenger);
 					pst.setInt(2, booking);
 					pst.setString(3, comboBoxAgentCode.getSelectedItem().toString());
 					if(firstName.contains("-"))
@@ -583,20 +583,39 @@ public class CreateNewBooking extends JFrame {
 						pst.setString(5, null);
 					}											
 					pst.setString(6, lastName.toString());//lastname
-					pst.setString(7, textFieldDeparture.getText());
-					pst.setString(8, textFieldGateway.getText());
+					pst.setString(7, ""+(d.getMonth()+1)+"/"+d.getDate()+"/"+(d.getYear()+1900));
+					pst.setString(8, comboBoxGateway.getSelectedItem().toString());
 
 					
 					
 					pst.execute();
 					
-					JOptionPane.showMessageDialog(null, "Data saved!");					
+					//JOptionPane.showMessageDialog(null, "Passenger info saved!");					
 					pst.close();					
 				}catch(Exception e1){
 					e1.printStackTrace();
 				}
 			}
 		}
+	}
+	
+	public void clearAll()
+	{
+		comboBoxAgentCode.setSelectedItem("");
+		textFieldAgentName.setText("");
+		textFieldAttention.setText("");
+		textFieldCommission.setText("");
+		textFieldStreet.setText("");
+		textFieldCity.setText("");
+		textFieldState.setText("");
+		textFieldCountry.setText("");
+		textFieldZipcode.setText("");
+		textFieldTelephone.setText("");
+		comboBoxNumOfRooms.setSelectedItem(1);
+		comboBoxNumOfPax.setSelectedItem(1);
+		datePickerDeparture.setDate(null);
+		comboBoxGateway.setSelectedItem("");		
+		model.setRowCount(0);
 	}
 }
 
