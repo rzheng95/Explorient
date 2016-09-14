@@ -11,6 +11,7 @@ import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JPasswordField;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -48,6 +49,9 @@ public class Login {
 	private Connection connection = null;
 	private JButton btnLogin;
 	private HintTextField textFieldDatabaseLocation;
+	private JButton btnFolderChooser;
+	private JFileChooser chooser;
+	private String choosertitle;
 
 	/**
 	 * Launch the application.
@@ -99,15 +103,13 @@ public class Login {
 	private void initialize() {
 		try{UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}catch(Exception e){}
 		frame = new JFrame();
-		
-
-		
+			
 		frame.setResizable(false);
 		frame.setTitle("Login");
 		logo = new ImageIcon(this.getClass().getResource("/Explorient Logo.png")).getImage();
 		icon = new ImageIcon(this.getClass().getResource("/Explorient Icon.jpg")).getImage();
 		frame.setIconImage(icon);
-		frame.setBounds(100, 100, 320, 453);
+		frame.setBounds(100, 100, 320, 450);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		frame.setLocationRelativeTo(null);// put this after setSize and pack
@@ -227,7 +229,7 @@ public class Login {
 						
 						// Start another JFrame
 						frame.dispose();
-						Voucher v = new Voucher();
+						MainMenu v = new MainMenu();
 						v.setVisible(true);
 					}
 					else if(count > 1)
@@ -297,9 +299,26 @@ public class Login {
 		frame.getContentPane().add(lblLocalDatabaseLocation);
 		
 		textFieldDatabaseLocation = new HintTextField("e.g = Y:\\Users\\Richard\\Dropbox\\Database");
-		textFieldDatabaseLocation.setBounds(10, 355, 290, 25);
+		textFieldDatabaseLocation.setBounds(10, 350, 263, 25);
 		frame.getContentPane().add(textFieldDatabaseLocation);
 		textFieldDatabaseLocation.setColumns(10);
+		
+		btnFolderChooser = new JButton("New button");
+		btnFolderChooser.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				chooser = new JFileChooser(); 
+			    chooser.setCurrentDirectory(new java.io.File("."));
+			    chooser.setDialogTitle(choosertitle);
+			    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			    
+			    // disable the "All files" option.
+			    chooser.setAcceptAllFileFilterUsed(false);			     
+			    if (chooser.showOpenDialog(frame.getContentPane()) == JFileChooser.APPROVE_OPTION) 
+			    	textFieldDatabaseLocation.setText(chooser.getSelectedFile().toString());
+			}
+		});
+		btnFolderChooser.setBounds(275, 350, 30, 25);
+		frame.getContentPane().add(btnFolderChooser);
 		
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
@@ -308,6 +327,11 @@ public class Login {
 		menuBar.add(mnSelect);
 		
 		JMenuItem mntmExit = new JMenuItem("Exit");
+		mntmExit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
 		mnSelect.add(mntmExit);
 		
 		JMenu mnAbout = new JMenu("About");

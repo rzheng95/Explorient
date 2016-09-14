@@ -41,6 +41,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 import javax.swing.SwingConstants;
 import javax.swing.JTabbedPane;
@@ -75,7 +78,7 @@ public class Voucher extends JFrame
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Voucher frame = new Voucher();
+					Voucher frame = new Voucher("");
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -88,11 +91,23 @@ public class Voucher extends JFrame
 	/**
 	 * Create the frame.
 	 */
-	public Voucher() {
+	public Voucher(String bookingNumber) {
 		try{UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}catch(Exception e){}
-		connection = sqliteConnection.dbConnector("Y:\\Users\\Richard\\Dropbox\\Database\\Explorient.sqlite");
+		
+		try{
+			FileReader fr = new FileReader("Directory.txt");
+			BufferedReader br = new BufferedReader(fr);
+			
+			String str;
+			while((str = br.readLine()) != null)		
+				connection = sqliteConnection.dbConnector(str+"\\Explorient.sqlite");									
+			br.close();
+		}catch(IOException e1){
+			JOptionPane.showMessageDialog(null, "File not found");
+		}
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1284, 761);
+		setBounds(100, 100, 1246, 625);
 		//setResizable(false);
 		setTitle("Voucher");
 		setLocationRelativeTo(null);
@@ -103,7 +118,7 @@ public class Voucher extends JFrame
 		lblBookingNumber.setBounds(10, 10, 80, 20);
 		lblBookingNumber.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		
-		textFieldBookingNumber = new JTextField();
+		textFieldBookingNumber = new JTextField(bookingNumber);
 		textFieldBookingNumber.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		textFieldBookingNumber.setBounds(100, 10, 110, 23);
 		textFieldBookingNumber.addKeyListener(new KeyAdapter() {
@@ -115,39 +130,24 @@ public class Voucher extends JFrame
 					ResultSet rs = pst.executeQuery();
 					tableVoucher.setModel(DbUtils.resultSetToTableModel(rs));
 					
-					refreshTable("B"+textFieldBookingNumber.getText());
+					refreshTable("B"+textFieldBookingNumber.getText(), "Voucher");
 					pst.close();
-					rs.close();
-					
-					try{
-						
-						String query1 = "select * from PaxInfos where BookingNumber=? ";
-						PreparedStatement pst1 = connection.prepareStatement(query1);
-						pst1.setString(1, textFieldBookingNumber.getText());
-						ResultSet rs1 = pst1.executeQuery();
-						
-						/*if(rs1.getString("Firstname") != null)
-							lblPassengerNames.setText(rs1.getString("Firstname"));
-						if(rs1.getString("Middlename") != null)
-							lblPassengerNames.setText(lblPassengerNames.getText()+" "+rs1.getString("Middlename"));
-						if(rs1.getString("Lastname") != null)
-							lblPassengerNames.setText(lblPassengerNames.getText()+" "+rs1.getString("Lastname"));*/
-						
-						tablePassengers.setModel(DbUtils.resultSetToTableModel(rs1));
-						
-						pst1.close();
-						rs1.close();
-						
-					}catch(Exception e1)
-					{
-						e1.printStackTrace();
-					}
-					
-				}catch(Exception e1)
-				{
+					rs.close();	
+				}catch(Exception e1){
 					//e1.printStackTrace();
 				}
 				
+				try{							
+					String query = "select * from PaxInfos where BookingNumber="+textFieldBookingNumber.getText();
+					PreparedStatement pst = connection.prepareStatement(query);
+					ResultSet rs = pst.executeQuery();
+					
+					tablePassengers.setModel(DbUtils.resultSetToTableModel(rs));		
+					pst.close();
+					rs.close();
+				}catch(Exception e1){
+					//e1.printStackTrace();
+				}
 			}
 			@Override
 			public void keyTyped(KeyEvent event) {
@@ -161,7 +161,7 @@ public class Voucher extends JFrame
 		textFieldBookingNumber.setColumns(10);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(220, 9, 1007, 670);
+		tabbedPane.setBounds(220, 9, 1000, 545);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		tabbedPane.addTab("Voucher", null, scrollPane, null);
@@ -351,10 +351,8 @@ public class Voucher extends JFrame
 						pst.setString(5, comboBoxManifest.getSelectedItem().toString());
 						pst.setString(6, textAreaDescriptions.getText());
 					}
-					pst.execute();
-					
-					JOptionPane.showMessageDialog(null, "Data saved!");
-					
+					pst.execute();					
+					//JOptionPane.showMessageDialog(null, "Data saved!");					
 					pst.close();
 					
 				}catch(Exception e1){e1.printStackTrace();}
@@ -366,16 +364,16 @@ public class Voucher extends JFrame
 					String query = "Update IDs set EXPID='"+1+"' , Voucher='"+voucher+"' where EXPID='"+1+"'  ";
 					PreparedStatement pst = connection.prepareStatement(query);
 					pst.execute();					
-					JOptionPane.showMessageDialog(null, "Voucher ID Updated");					
+					//JOptionPane.showMessageDialog(null, "Voucher ID Updated");					
 					pst.close();
 					}catch(Exception e1){
 					e1.printStackTrace();
 				}
 				
-				refreshTable("B"+textFieldBookingNumber.getText());
+				refreshTable("B"+textFieldBookingNumber.getText(), "Voucher");
 			}
 		});
-		btnCreate.setBounds(56, 497, 89, 23);
+		btnCreate.setBounds(10, 490, 90, 25);
 		getContentPane().add(btnCreate);
 		
 		JLabel lblRoomType = new JLabel("Room Type:");
@@ -396,7 +394,7 @@ public class Voucher extends JFrame
 				clear();			
 			}
 		});
-		btnClear.setBounds(56, 531, 89, 23);
+		btnClear.setBounds(111, 490, 90, 25);
 		getContentPane().add(btnClear);
 		
 		JButton btnUpdate = new JButton("Update");
@@ -439,11 +437,33 @@ public class Voucher extends JFrame
 							
 						}catch(Exception e1){e1.printStackTrace();}
 					}
-				refreshTable("B"+textFieldBookingNumber.getText());
+				refreshTable("B"+textFieldBookingNumber.getText(), "Voucher");
 			}
 		});
-		btnUpdate.setBounds(56, 560, 89, 23);
+		btnUpdate.setBounds(10, 525, 90, 25);
 		getContentPane().add(btnUpdate);
+		
+		JButton btnDelete = new JButton("Delete");
+		btnDelete.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int action = JOptionPane.showConfirmDialog(null, "Did you try updating voucher? \nDo you really want to delete this voucher?", "Delete", JOptionPane.YES_NO_OPTION);
+				if(action==0){
+					try{
+						
+						String query = "delete from B"+textFieldBookingNumber.getText()+" where VoucherID='"+voucherID+"' ";
+						PreparedStatement pst = connection.prepareStatement(query);	
+						clear();
+						pst.execute();
+						pst.close();						
+					}catch(Exception e1){
+						e1.printStackTrace();
+					}
+					refreshTable("B"+textFieldBookingNumber.getText(), "Voucher");
+				}
+			}
+		});
+		btnDelete.setBounds(111, 525, 90, 25);
+		getContentPane().add(btnDelete);
 		
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -469,13 +489,17 @@ public class Voucher extends JFrame
 
 	}
 	
-	public void refreshTable(String tableName)
+	public void refreshTable(String tableName, String jtable)
 	{
 		try{
 			String query = "select * from "+tableName;
 			PreparedStatement pst = connection.prepareStatement(query);
 			ResultSet rs = pst.executeQuery();
-			tableVoucher.setModel(DbUtils.resultSetToTableModel(rs));
+			if(jtable.equals("Voucher"))
+				tableVoucher.setModel(DbUtils.resultSetToTableModel(rs));
+			if(jtable.equals("Passenger"))
+				tablePassengers.setModel(DbUtils.resultSetToTableModel(rs));
+				
 			
 			
 			pst.close();
@@ -485,6 +509,7 @@ public class Voucher extends JFrame
 			e1.printStackTrace();
 		}
 	}
+	
 	
 	public void clear()
 	{

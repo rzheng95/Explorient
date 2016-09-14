@@ -31,6 +31,9 @@ import javax.swing.UIManager;
 import javax.swing.JButton;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -106,7 +109,19 @@ public class CreateNewBooking extends JFrame {
 	 */
 	public CreateNewBooking(){	
 		try{UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}catch(Exception e){}
-		connection = sqliteConnection.dbConnector("Y:\\Users\\Richard\\Dropbox\\Database\\Explorient.sqlite");
+		
+		try{
+			FileReader fr = new FileReader("Directory.txt");
+			BufferedReader br = new BufferedReader(fr);
+			
+			String str;
+			while((str = br.readLine()) != null)		
+				connection = sqliteConnection.dbConnector(str+"\\Explorient.sqlite");									
+			br.close();
+		}catch(IOException e1){
+			JOptionPane.showMessageDialog(null, "File not found");
+		}
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 520, 720);
 		//setResizable(false);
@@ -139,6 +154,13 @@ public class CreateNewBooking extends JFrame {
 		menuBar.add(mnFile);
 		
 		JMenuItem mntmVoucher = new JMenuItem("Voucher");
+		mntmVoucher.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				dispose();
+				Voucher v = new Voucher("");
+				v.setVisible(true);
+			}
+		});
 		mnFile.add(mntmVoucher);
 		
 		JMenu mnAbout = new JMenu("About");
@@ -257,11 +279,14 @@ public class CreateNewBooking extends JFrame {
 		btnFinalize.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {		
 				if(comboBoxAgentCode.getSelectedItem() == null || 
+				   textFieldAttention.getText().equals("") ||
+				   textFieldAgentName.getText().equals("") ||
 				   textFieldStreet.getText().equals("")||
 				   textFieldCity.getText().equals("")||
-				   textFieldCountry.getText().equals(""))
+				   textFieldCountry.getText().equals("") ||
+				   textFieldTelephone.getText().equals(""))
 				{
-					lblAgentWarning.setText("Agent info incomplete!");
+					lblAgentWarning.setText("Agent Info Incomplete!");
 					return;
 				}
 				else 
@@ -283,6 +308,14 @@ public class CreateNewBooking extends JFrame {
 					e1.printStackTrace();
 				}
 */
+				
+				if(datePickerDeparture.getDate() == null || comboBoxGateway.getSelectedItem().toString().trim().equals(""))
+				{
+					lblPassengerWarning.setText("Passenger Info Imcomplete!");
+					lblPassengerWarning.setForeground(Color.red);
+					return;
+				}
+				
 				if(tablePassengerCount() == (comboBoxNumOfPax.getSelectedIndex()+1)) // index starts from 0
 				{
 					lblPassengerWarning.setText("");
@@ -331,7 +364,13 @@ public class CreateNewBooking extends JFrame {
 						e1.printStackTrace();
 					}
 					
-					clearAll();
+					//clearAll();
+					
+					dispose();
+					Voucher v = new Voucher(""+booking);
+					v.setVisible(true);
+					v.refreshTable("B"+booking, "Voucher");
+					v.refreshTable("PaxInfos", "Passenger");
 				}
 				else
 				{
