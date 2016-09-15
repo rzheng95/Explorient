@@ -484,6 +484,9 @@ public class Voucher extends JFrame
 		JMenuItem mntmSearch = new JMenuItem("Search");
 		mnFile.add(mntmSearch);
 		
+		JMenuItem mntmPrint = new JMenuItem("Print");
+		mnFile.add(mntmPrint);
+		
 		JMenu mnAbout = new JMenu("About");
 		menuBar.add(mnAbout);
 

@@ -13,6 +13,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class MainMenu extends JFrame {
 
@@ -51,11 +53,25 @@ public class MainMenu extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JButton btnNewButton_2 = new JButton("Create a New Booking");
-		contentPane.add(btnNewButton_2);
+		JButton btnNewBooking = new JButton("Create a New Booking");
+		btnNewBooking.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				dispose();
+				CreateNewBooking cnb = new CreateNewBooking();
+				cnb.setVisible(true);
+			}
+		});
+		contentPane.add(btnNewBooking);
 		
-		JButton btnNewButton_1 = new JButton("Voucher System");
-		contentPane.add(btnNewButton_1);
+		JButton btnVoucherSystem = new JButton("Voucher System");
+		btnVoucherSystem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+				Voucher v = new Voucher("");
+				v.setVisible(true);
+			}
+		});
+		contentPane.add(btnVoucherSystem);
 		
 		JButton btnNewButton = new JButton("Search Terms");
 		contentPane.add(btnNewButton);
