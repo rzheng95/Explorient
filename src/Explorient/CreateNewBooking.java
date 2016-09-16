@@ -61,6 +61,8 @@ import javax.swing.JSeparator;
 import javax.swing.DropMode;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class CreateNewBooking extends JFrame {
 
@@ -87,6 +89,7 @@ public class CreateNewBooking extends JFrame {
 	private AutocompleteJComboBox comboBoxAgentCode;
 	private JTextField textFieldState;
 	private JXDatePicker datePickerDeparture;
+	private JButton btnDelete;
 
 	/**
 	 * Launch the application.
@@ -109,7 +112,7 @@ public class CreateNewBooking extends JFrame {
 	 */
 	public CreateNewBooking(){	
 		try{UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}catch(Exception e){}
-		
+		// establish connection to database
 		try{
 			FileReader fr = new FileReader("Directory.txt");
 			BufferedReader br = new BufferedReader(fr);
@@ -364,13 +367,14 @@ public class CreateNewBooking extends JFrame {
 						e1.printStackTrace();
 					}
 					
-					//clearAll();
-					
-					dispose();
+					clearAll();
+			
+					JOptionPane.showMessageDialog(null, "B#"+booking+"has been created.", "New Booking", JOptionPane.PLAIN_MESSAGE);
+					/*dispose();
 					Voucher v = new Voucher(""+booking);
 					v.setVisible(true);
 					v.refreshTable("B"+booking, "Voucher");
-					v.refreshTable("PaxInfos", "Passenger");
+					v.refreshTable("PaxInfos", "Passenger");*/
 				}
 				else
 				{
@@ -388,6 +392,13 @@ public class CreateNewBooking extends JFrame {
 		model = new DefaultTableModel();
 		
 		table = new JTable(model);
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				btnDelete.setEnabled(true);
+			}
+		});
+
 		model.addColumn("Lastname");
 		model.addColumn("Firstname");	
 		
@@ -399,12 +410,14 @@ public class CreateNewBooking extends JFrame {
 		lblGateway.setBounds(10, 460, 90, 20);
 		lblGateway.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		
-		JButton btnDelete = new JButton("Delete");
+		btnDelete = new JButton("Delete");
+		btnDelete.setEnabled(false);
 		btnDelete.setBounds(427, 540, 63, 23);
 		btnDelete.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(table.getSelectedRow() == -1) return;
 				model.removeRow(table.getSelectedRow());
+				btnDelete.setEnabled(false);
 			}
 		});
 		
@@ -492,7 +505,7 @@ Pane.showMessageDialog(null, "PaxInfos has been created.");
 */
 		
 		lblPassengerWarning = new JLabel("");
-		lblPassengerWarning.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblPassengerWarning.setFont(new Font("Tahoma", Font.BOLD, 12));
 		lblPassengerWarning.setBounds(10, 520, 290, 20);
 		contentPane.add(lblPassengerWarning);	
 
@@ -556,7 +569,7 @@ Pane.showMessageDialog(null, "PaxInfos has been created.");
 		
 		lblAgentWarning = new JLabel("");
 		lblAgentWarning.setForeground(Color.RED);
-		lblAgentWarning.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblAgentWarning.setFont(new Font("Tahoma", Font.BOLD, 12));
 		lblAgentWarning.setBounds(10, 310, 290, 20);
 		contentPane.add(lblAgentWarning);
 		

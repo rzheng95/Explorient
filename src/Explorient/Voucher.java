@@ -13,6 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.table.DefaultTableModel;
 
 import org.jdesktop.swingx.JXDatePicker;
 
@@ -56,6 +57,8 @@ import javax.swing.JInternalFrame;
 import javax.swing.JTextArea;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 
 public class Voucher extends JFrame 
@@ -71,6 +74,8 @@ public class Voucher extends JFrame
 	private JTextArea textAreaDescriptions;
 	private int voucher;
 	private String voucherID;
+	private JButton btnCreate, btnUpdate, btnDelete;
+
 	/**
 	 * Launch the application.
 	 */
@@ -93,7 +98,7 @@ public class Voucher extends JFrame
 	 */
 	public Voucher(String bookingNumber) {
 		try{UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}catch(Exception e){}
-		
+		// establish connection to database
 		try{
 			FileReader fr = new FileReader("Directory.txt");
 			BufferedReader br = new BufferedReader(fr);
@@ -131,9 +136,16 @@ public class Voucher extends JFrame
 					tableVoucher.setModel(DbUtils.resultSetToTableModel(rs));
 					
 					refreshTable("B"+textFieldBookingNumber.getText(), "Voucher");
+					
+					btnCreate.setEnabled(true);
+					btnUpdate.setEnabled(true);
 					pst.close();
 					rs.close();	
 				}catch(Exception e1){
+					DefaultTableModel model = (DefaultTableModel)tableVoucher.getModel();
+					model.setRowCount(0);
+					btnCreate.setEnabled(false);
+					btnUpdate.setEnabled(false);
 					//e1.printStackTrace();
 				}
 				
@@ -146,8 +158,12 @@ public class Voucher extends JFrame
 					pst.close();
 					rs.close();
 				}catch(Exception e1){
+					DefaultTableModel model = (DefaultTableModel)tablePassengers.getModel();
+					model.setRowCount(0);
 					//e1.printStackTrace();
 				}
+				
+				
 			}
 			@Override
 			public void keyTyped(KeyEvent event) {
@@ -190,21 +206,18 @@ public class Voucher extends JFrame
 					Date d = new Date((Integer.parseInt(dateArr[2])-1900),(Integer.parseInt(dateArr[0])-1),Integer.parseInt(dateArr[1]));
 					datePickerCheckIn.setDate(d);
 					comboBoxManifest.setSelectedItem(rs.getString("Manifest"));
-					textAreaDescriptions.setText(rs.getString("Description"));
-					
-					
-					
-
-
-					
-					
+					textAreaDescriptions.setText(rs.getString("Description"));			
 					pst.close();
-					
-				}catch(Exception e1)
-				{
+					rs.close();
+				}catch(Exception e1){
 					e1.printStackTrace();
 				}
 			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				btnDelete.setEnabled(true);
+			}
+
 		});
 		tableVoucher.setFont(new Font("Tahoma", Font.BOLD, 12));
 		scrollPane.setViewportView(tableVoucher);
@@ -307,9 +320,19 @@ public class Voucher extends JFrame
 		comboBoxManifest.setBounds(100, 250, 110, 23);
 		getContentPane().add(comboBoxManifest);
 		
-		JButton btnCreate = new JButton("Create");
+		btnCreate = new JButton("Create");
+		btnCreate.setEnabled(false);
 		btnCreate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				if(comboBoxRoomType.getSelectedItem() == null ||
+				   Integer.parseInt(spinnerPassenger.getValue().toString()) == 0 ||
+				   Integer.parseInt(spinnerNight.getValue().toString()) == 0 ||
+				   datePickerCheckIn.getDate() == null ||
+				   comboBoxManifest.getSelectedItem() == null)
+				{
+					JOptionPane.showMessageDialog(null, "Voucher Info Incomplete!", "Exception", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
 				// grab Voucher number from IDs
 				try{				
 					String query = "select * from IDs where EXPID=1 ";
@@ -351,14 +374,14 @@ public class Voucher extends JFrame
 						pst.setString(5, comboBoxManifest.getSelectedItem().toString());
 						pst.setString(6, textAreaDescriptions.getText());
 					}
-					pst.execute();					
-					//JOptionPane.showMessageDialog(null, "Data saved!");					
-					pst.close();
 					
+					JOptionPane.showMessageDialog(null, "Voucher Created.");
+					pst.execute();										
+					pst.close();				
 				}catch(Exception e1){e1.printStackTrace();}
 				
 				
-				// update booking and passenger in IDs
+				// update voucher id
 				try{				
 					//String query = "Update IDs set EXPID='"+1+"' ,Booking='"+(lastBookingNumber+1)+"' ,Voucher='"+voucher+"' ,Passenger='"+passenger+"' where EXPID='"+1+"'  ";
 					String query = "Update IDs set EXPID='"+1+"' , Voucher='"+voucher+"' where EXPID='"+1+"'  ";
@@ -397,7 +420,8 @@ public class Voucher extends JFrame
 		btnClear.setBounds(111, 490, 90, 25);
 		getContentPane().add(btnClear);
 		
-		JButton btnUpdate = new JButton("Update");
+		btnUpdate = new JButton("Update");
+		btnUpdate.setEnabled(false);
 		btnUpdate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
@@ -443,7 +467,8 @@ public class Voucher extends JFrame
 		btnUpdate.setBounds(10, 525, 90, 25);
 		getContentPane().add(btnUpdate);
 		
-		JButton btnDelete = new JButton("Delete");
+		btnDelete = new JButton("Delete");
+		btnDelete.setEnabled(false);
 		btnDelete.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int action = JOptionPane.showConfirmDialog(null, "Did you try updating voucher? \nDo you really want to delete this voucher?", "Delete", JOptionPane.YES_NO_OPTION);
@@ -460,6 +485,7 @@ public class Voucher extends JFrame
 					}
 					refreshTable("B"+textFieldBookingNumber.getText(), "Voucher");
 				}
+				btnDelete.setEnabled(false);
 			}
 		});
 		btnDelete.setBounds(111, 525, 90, 25);

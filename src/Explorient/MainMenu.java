@@ -73,7 +73,14 @@ public class MainMenu extends JFrame {
 		});
 		contentPane.add(btnVoucherSystem);
 		
-		JButton btnNewButton = new JButton("Search Terms");
+		JButton btnNewButton = new JButton("Information Center");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+				Search s = new Search();
+				s.setVisible(true);
+			}
+		});
 		contentPane.add(btnNewButton);
 	}
 

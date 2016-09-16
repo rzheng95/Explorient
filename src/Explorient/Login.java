@@ -198,11 +198,11 @@ public class Login {
 				lblUsernameWarning.setText("");
 				lblPasswordWarning.setText("");
 				if(textFieldUsername.getText().trim().equals("")){
-					lblUsernameWarning.setText("Username Can NOT be blank!");	
+					lblUsernameWarning.setText("Username cannot be blank!");	
 					lblUsernameWarning.setForeground (Color.red);
 				}
 				if(passwordField.getText().trim().equals("")){
-					lblPasswordWarning.setText("Password Can NOT be blank!");
+					lblPasswordWarning.setText("Password cannot be blank!");
 					lblPasswordWarning.setForeground (Color.red);
 				}
 				
@@ -275,16 +275,18 @@ public class Login {
 		frame.getContentPane().add(passwordField);
 		
 		lblUsernameWarning = new JLabel("");
-		lblUsernameWarning.setBounds(74, 175, 155, 14);
+		lblUsernameWarning.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblUsernameWarning.setBounds(74, 175, 226, 14);
 		frame.getContentPane().add(lblUsernameWarning);
 		
 		lblPasswordWarning = new JLabel("");
-		lblPasswordWarning.setBounds(74, 225, 155, 14);
+		lblPasswordWarning.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblPasswordWarning.setBounds(74, 225, 226, 14);
 		frame.getContentPane().add(lblPasswordWarning);
 		
 		lblLoginMessage = new JLabel("");
 		lblLoginMessage.setHorizontalAlignment(SwingConstants.CENTER);
-		lblLoginMessage.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblLoginMessage.setFont(new Font("Tahoma", Font.BOLD, 12));
 		lblLoginMessage.setBounds(10, 299, 290, 20);
 		frame.getContentPane().add(lblLoginMessage);
 		
