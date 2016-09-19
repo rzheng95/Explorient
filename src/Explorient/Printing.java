@@ -50,6 +50,8 @@ public class Printing extends JFrame {
 	private JTextPane textPane;
 	private int bookingNumber, numOfPax;
 	private boolean singlePassenger = false;
+	private List<Object> servicesList, hotelList;
+	private String services, servicePrivider;
 
 	/**
 	 * Launch the application.
@@ -73,6 +75,10 @@ public class Printing extends JFrame {
 	 */
 	public Printing(int bookingNumber) {
 		numOfPax = 0;
+		servicesList = new ArrayList<>();
+		hotelList = new ArrayList<>();
+		services = "";
+		servicePrivider = "";
 		this.bookingNumber = bookingNumber;
 		try{UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}catch(Exception e){}
 		try{
@@ -100,7 +106,10 @@ public class Printing extends JFrame {
 		textPane.setContentType("text/html");
 		textPane.setEditable(false);
 
-		formatPrintContent(bookingNumber);
+		
+		// calling methods
+		landServices();
+		
 
 		contentPane.add(textPane);
 		
@@ -119,7 +128,7 @@ public class Printing extends JFrame {
 		contentPane.add(btnNewButton);
 	}
 
-	public void formatPrintContent(int bookingNumber)
+	public void formatPrintContent()
 	{
 		// 1. booking # 
 		// 2. issue date
@@ -171,6 +180,7 @@ public class Printing extends JFrame {
 		int day = cal.get(Calendar.DAY_OF_MONTH);
 		String month = new SimpleDateFormat("MMM").format(cal.getTime());
 		int year = cal.get(Calendar.YEAR);
+
 		String content = "";
 		// Booking # and Issue Date
 		content += "<p class=\"topRightCorner\">Booking #: "+bookingNumber+space(10)+"<br>Issue Date: "+(month+" "+day+", "+year)+"</p>";			
@@ -201,8 +211,10 @@ public class Printing extends JFrame {
 				+ "margin-top: -20px"
 				+ "}");
 		
+		
+
 		// services
-		content += "<p class=\"services\">"+getServices()+"</p>";	
+		content += "<p class=\"services\">"+services+"</p>";	
 		styleSheet.addRule(".services{"
 				+ "font-size: 8px;"
 				+ "font-family: Calibri;"
@@ -211,14 +223,12 @@ public class Printing extends JFrame {
 				+ "}");
 		
 		// service provider info
-		content += "<p class=\"servicesProvider\">"+getSerivePrivider()+"</p>";	
+		content += "<p class=\"servicesProvider\">"+getSerivePrivider(servicePrivider)+"</p>";	
 		
 		styleSheet.addRule(".servicesProvider{"
 				+ "font-size: 6px;"
 				+ "font-family: Calibri;"
 				+ "}");
-		
-		
 		
 		
 		try {
@@ -230,14 +240,52 @@ public class Printing extends JFrame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
+		
 	}
 	
-	public String getSerivePrivider()
+	public void landServices()
+	{
+		getServices(); // date, type, description, LSCode, Meal
+		//System.out.println(servicesList);
+		String manifest = ((ArrayList<String>)servicesList.get(0)).get(3);; // DESBKK
+		int lines = 3;	
+		for(int i=0; i<servicesList.size(); i++)
+		{
+			
+			String tempManifest = ((ArrayList<String>)servicesList.get(i)).get(3);
+			
+			if(tempManifest.equals(manifest) && lines > 0)
+			{
+				manifest = tempManifest;
+				Format formatter =  new SimpleDateFormat("MMM");
+				Date d = (Date) ((ArrayList<Object>)servicesList.get(i)).get(0);
+				String month_1 = formatter.format(d);
+				
+				services += month_1+" "+d.getDate()+": "+((ArrayList<Object>)servicesList.get(i)).get(2)+"<br>";
+
+				lines--;
+				
+				continue;
+			}
+			servicePrivider = manifest;
+			formatPrintContent();
+			
+			i--;
+			manifest = tempManifest;
+			services = "";
+			lines = 3;
+			
+		}
+		formatPrintContent();
+	}
+	
+	
+	public String getSerivePrivider(String serviceProvider)
 	{
 		String returnString = "";
 		try{							
-			String query = "select LSName,LocalPhone,Street,City,State,Country,Zipcode from LandServices where LSCode='"+"DESBKK"+"'";
+			String query = "select LSName,LocalPhone,Street,City,State,Country,Zipcode from LandServices where LSCode='"+serviceProvider+"'";
 			PreparedStatement pst = connection.prepareStatement(query);
 			ResultSet rs = pst.executeQuery();
 			
@@ -284,9 +332,8 @@ public class Printing extends JFrame {
 		}
 	}
 	
-	public String getServices()
+	public void getServices()
 	{
-		String services = "";
 		List<Object> temp = new ArrayList<>();
 		try{							
 			String query = "select * from B"+bookingNumber+" where Type='Land Service'";
@@ -308,22 +355,22 @@ public class Printing extends JFrame {
 				
 				dates.add(d1);
 				temp.add(d1);
+				temp.add(rs.getString("Type"));
 				temp.add(rs.getString("Description"));
+				temp.add(rs.getString("Manifest"));
+				temp.add(rs.getString("Meal"));
 				list.add(temp);
 				temp = new ArrayList<>();
 							
 			}
-		
-			
+				
 			temp = new ArrayList<>();
-			
+			// sort by dates
 			for(int i=0; i<dates.size();i++)
 			{
 				Date d = Collections.min(dates);
-				int index = dates.indexOf(d);
-				
-				temp.add(list.remove(index));
-				
+				int index = dates.indexOf(d);				
+				temp.add(list.remove(index));				
 				dates.remove(d);			
 				i--;
 			}
@@ -332,17 +379,7 @@ public class Printing extends JFrame {
 			rs.close();
 		}catch(Exception e1){e1.printStackTrace();}
 
-		
-		for(int i=0; i<temp.size(); i++)
-		{
-			Format formatter =  new SimpleDateFormat("MMM");
-			Date d = (Date) ((ArrayList<Object>)temp.get(i)).get(0);
-			String month = formatter.format(d);
-			services += month+" "+d.getDate()+": "+((ArrayList<Object>)temp.get(i)).get(1)+"<br>";
-		}
-		
-		
-		return services.substring(0, services.length()-4);
+		servicesList = temp;
 	}
 	
 	public String space(int n)

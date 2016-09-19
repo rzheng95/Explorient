@@ -290,7 +290,7 @@ public class Voucher extends JFrame
 			}
 		});
 		comboBoxType.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		comboBoxType.setModel(new DefaultComboBoxModel(new String[] {"Hotel", "Land Service"}));
+		comboBoxType.setModel(new DefaultComboBoxModel(new String[] {"Hotel", "Land Service", "Air Ticket"}));
 		comboBoxType.setBounds(100, 50, 110, 23);
 		getContentPane().add(comboBoxType);
 		
@@ -489,7 +489,7 @@ public class Voucher extends JFrame
 							
 						}catch(Exception e1){e1.printStackTrace();}
 					}
-					if(comboBoxType.getSelectedItem().equals("Land Service"))
+					if(comboBoxType.getSelectedItem().equals("Land Service") || comboBoxType.getSelectedItem().equals("Air Ticket"))
 					{
 						try{
 							String query = "Update "+"B"+textFieldBookingNumber.getText()+" set VoucherID='"+voucherID+"' ,Type='"+comboBoxType.getSelectedItem()+"',"
