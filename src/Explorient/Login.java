@@ -339,7 +339,7 @@ public class Login {
 		JMenu mnAbout = new JMenu("About");
 		menuBar.add(mnAbout);
 		
-		clock();
+		//clock();
 	}
 	
 	public void clock()

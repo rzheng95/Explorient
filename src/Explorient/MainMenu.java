@@ -77,7 +77,7 @@ public class MainMenu extends JFrame {
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dispose();
-				Search s = new Search();
+				InformationCenter s = new InformationCenter();
 				s.setVisible(true);
 			}
 		});

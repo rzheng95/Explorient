@@ -164,6 +164,26 @@ public class CreateNewBooking extends JFrame {
 				v.setVisible(true);
 			}
 		});
+		
+		JMenuItem mntmMainMenu = new JMenuItem("Main Menu");
+		mntmMainMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+				MainMenu s = new MainMenu();
+				s.setVisible(true);
+			}
+		});
+		mnFile.add(mntmMainMenu);
+		
+		JMenuItem mntmInfoCenter = new JMenuItem("Info Center");
+		mntmInfoCenter.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+				InformationCenter s = new InformationCenter();
+				s.setVisible(true);
+			}
+		});
+		mnFile.add(mntmInfoCenter);
 		mnFile.add(mntmVoucher);
 		
 		JMenu mnAbout = new JMenu("About");
@@ -341,7 +361,7 @@ public class CreateNewBooking extends JFrame {
 					
 					// create a new booking 
 					try{	
-						String query = "CREATE TABLE if not exists\""+"B"+booking+"\" (\"VoucherID\" TEXT PRIMARY KEY  NOT NULL  UNIQUE , \"Type\" TEXT, \"NumOfPax\" INTEGER, \"NumOfNight\" INTEGER, \"RoomType\" TEXT, \"Date\" TEXT, \"Manifest\" TEXT, \"Description\" TEXT)";
+						String query = "CREATE TABLE if not exists\""+"B"+booking+"\" (\"VoucherID\" TEXT PRIMARY KEY  NOT NULL  UNIQUE , \"Type\" TEXT, \"NumOfPax\" INTEGER, \"NumOfNight\" INTEGER, \"RoomType\" TEXT, \"Date\" TEXT, \"Manifest\" TEXT, \"Meal\" TEXT, \"Description\" TEXT)";
 						PreparedStatement pst = connection.prepareStatement(query);
 						pst.execute();								
 						JOptionPane.showMessageDialog(null, "B"+booking+" has been created.");
