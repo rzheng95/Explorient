@@ -1,18 +1,18 @@
 package Explorient;
 
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
-import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.print.Paper;
 import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.text.DateFormatSymbols;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,12 +21,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
@@ -34,14 +32,12 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.InlineView;
 import javax.swing.text.html.StyleSheet;
-import javax.swing.text.html.parser.Element;
 
 public class Printing extends JFrame {
 
@@ -52,6 +48,7 @@ public class Printing extends JFrame {
 	private boolean singlePassenger = false;
 	private List<Object> servicesList, hotelList;
 	private String services, servicePrivider;
+	private PrinterJob job;
 
 	/**
 	 * Launch the application.
@@ -105,7 +102,10 @@ public class Printing extends JFrame {
 		textPane.setBounds(10, 11, 458, 654);
 		textPane.setContentType("text/html");
 		textPane.setEditable(false);
-
+		
+		job = PrinterJob.getPrinterJob();
+	
+		
 		
 		// calling methods
 		landServices();
@@ -116,11 +116,17 @@ public class Printing extends JFrame {
 		JButton btnNewButton = new JButton("Print");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					textPane.print();
-				} catch (PrinterException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				job.setPrintable(textPane.getPrintable(null, null), job.getPrinterJob().pageDialog(job.getPrinterJob().defaultPage()));
+				boolean ok = job.printDialog();
+				if(ok){
+					try {
+						//textPane.print();
+						job.print();
+		
+					} catch (PrinterException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
 			}
 		});
@@ -230,6 +236,8 @@ public class Printing extends JFrame {
 				+ "font-family: Calibri;"
 				+ "}");
 		
+		
+		content += "<br><br><br>";
 		
 		try {
 			kit.insertHTML(doc, doc.getLength(), content, 0, 0, null);
