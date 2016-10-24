@@ -602,10 +602,14 @@ public class Voucher extends JFrame
 				// 4. services
 				// 5. service provider info 
 				
-				Printing p = new Printing(Integer.parseInt(textFieldBookingNumber.getText()));
-				p.setDefaultCloseOperation(p.DISPOSE_ON_CLOSE);
-				p.setFocusableWindowState(false);
-				p.setVisible(true);
+		
+					try {
+						PrintVoucher pv = new PrintVoucher(15001);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
 			}
 		});
 		mnFile.add(mntmPrint);

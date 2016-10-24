@@ -82,6 +82,7 @@ public class InformationCenter extends JFrame {
 	private JMenuItem mntmMainMenu;
 	private JMenuItem mntmNewBooking;
 	private JMenuItem mntmVoucher;
+	private JTextField textFieldVendor;
 
 	/**
 	 * Launch the application.
@@ -119,7 +120,7 @@ public class InformationCenter extends JFrame {
 		}
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 935, 763);
+		setBounds(100, 100, 935, 798);
 		setTitle("Information Center");
 		setLocationRelativeTo(null);
 		
@@ -211,6 +212,7 @@ public class InformationCenter extends JFrame {
 					textFieldState.setText(rs.getString("State"));
 					textFieldCountry.setText(rs.getString("Country"));
 					textFieldZipcode.setText(rs.getString("Zipcode"));
+					textFieldVendor.setText(rs.getString("Vendor"));
 					btnDelete.setEnabled(true);
 					btnUpdate.setEnabled(true);
 					pst.close();		
@@ -377,7 +379,7 @@ public class InformationCenter extends JFrame {
 		
 		lblZipcode = new JLabel("Zipcode:");
 		lblZipcode.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblZipcode.setBounds(10, 631, 110, 20);
+		lblZipcode.setBounds(10, 630, 110, 20);
 		contentPane.add(lblZipcode);
 		
 		textFieldCity = new JTextField();
@@ -443,7 +445,7 @@ public class InformationCenter extends JFrame {
 				
 			}
 		});
-		btnDelete.setBounds(820, 664, 89, 23);
+		btnDelete.setBounds(821, 704, 89, 23);
 		contentPane.add(btnDelete);
 		
 		btnUpdate = new JButton("Update");
@@ -479,7 +481,7 @@ public class InformationCenter extends JFrame {
 							+ " "+name+"='"+textFieldName.getText()+"' ,"+contact+"='"+textFieldContact.getText()+"' ,"+phone+"='"+textFieldLocalPhone.getText()
 							+"' ,Fax='"+textFieldFax.getText()+"' ,Street='"+textFieldStreet.getText()
 							+"' ,City='"+textFieldCity.getText()+"' ,State='"+textFieldState.getText()
-							+"' ,Country='"+textFieldCountry.getText()+"' ,Zipcode='"+textFieldZipcode.getText()+"'  where "+id+"='"+EXPHLAID+"'";
+							+"' ,Country='"+textFieldCountry.getText()+"' ,Zipcode='"+textFieldZipcode.getText()+"',Vendor='"+textFieldVendor.getText()+"'  where "+id+"='"+EXPHLAID+"'";
 						
 					PreparedStatement pst = connection.prepareStatement(query);
 
@@ -495,7 +497,7 @@ public class InformationCenter extends JFrame {
 			refreshTable(table);
 			}
 		});
-		btnUpdate.setBounds(721, 664, 89, 23);
+		btnUpdate.setBounds(722, 704, 89, 23);
 		contentPane.add(btnUpdate);
 		
 		JButton btnCreate = new JButton("Create");
@@ -511,7 +513,8 @@ public class InformationCenter extends JFrame {
 					textFieldLocalPhone.getText().equals("")||				
 					textFieldStreet.getText().equals("")||
 					textFieldCity.getText().equals("")||
-					textFieldCountry.getText().equals(""))
+					textFieldCountry.getText().equals("") ||
+					textFieldVendor.getText().equals(""))
 				{
 					lblWarningMessage.setText(tableNoS+" Info Incomplete!");								
 					lblWarningMessage.setForeground(Color.red);
@@ -567,6 +570,7 @@ public class InformationCenter extends JFrame {
 					pst.setString(9, textFieldState.getText());
 					pst.setString(10, textFieldCountry.getText());
 					pst.setString(11, textFieldZipcode.getText());
+					pst.setString(11, textFieldVendor.getText());
 
 					String s = comboBoxTable.getSelectedItem().toString().substring(0,comboBoxTable.getSelectedItem().toString().length()-1);
 					JOptionPane.showMessageDialog(null, textFieldName.getText()+"("+textFieldCode.getText()+") has been added to the "+s+" Database");				
@@ -589,7 +593,7 @@ public class InformationCenter extends JFrame {
 				clear();
 			}
 		});
-		btnCreate.setBounds(622, 664, 89, 23);
+		btnCreate.setBounds(623, 704, 89, 23);
 		contentPane.add(btnCreate);
 		
 		JButton btnClear = new JButton("Clear");
@@ -598,13 +602,24 @@ public class InformationCenter extends JFrame {
 				clear();
 			}
 		});
-		btnClear.setBounds(523, 664, 89, 23);
+		btnClear.setBounds(524, 704, 89, 23);
 		contentPane.add(btnClear);
 		
 		lblWarningMessage = new JLabel("");
 		lblWarningMessage.setFont(new Font("Tahoma", Font.BOLD, 12));
-		lblWarningMessage.setBounds(10, 660, 500, 20);
+		lblWarningMessage.setBounds(10, 704, 470, 20);
 		contentPane.add(lblWarningMessage);
+		
+		JLabel vendor = new JLabel("Vendor:");
+		vendor.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		vendor.setBounds(10, 660, 110, 20);
+		contentPane.add(vendor);
+		
+		textFieldVendor = new JTextField();
+		textFieldVendor.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		textFieldVendor.setColumns(10);
+		textFieldVendor.setBounds(120, 660, 790, 23);
+		contentPane.add(textFieldVendor);
 		
 		
 		initialize();

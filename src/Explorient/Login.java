@@ -316,7 +316,7 @@ public class Login {
 			    // disable the "All files" option.
 			    chooser.setAcceptAllFileFilterUsed(false);			     
 			    if (chooser.showOpenDialog(frame.getContentPane()) == JFileChooser.APPROVE_OPTION) 
-			    	textFieldDatabaseLocation.setText(chooser.getSelectedFile().toString());
+			    	textFieldDatabaseLocation.setDir(chooser.getSelectedFile().toString());
 			}
 		});
 		btnFolderChooser.setBounds(275, 350, 30, 25);

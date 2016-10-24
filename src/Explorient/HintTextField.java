@@ -48,6 +48,7 @@ public class HintTextField extends JTextField implements FocusListener {
 		  showingHint = false;
 		  setForeground(Color.black);
 	  }
+	  
 }
 
 

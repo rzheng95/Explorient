@@ -14,5 +14,18 @@
 	<classpathentry kind="lib" path="miglayout15-swing.jar" sourcepath="miglayout-src.zip"/>
 	<classpathentry kind="lib" path="Resources/swingx-0.9.4.jar" sourcepath="Resources/swingx-0.9.4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="Resources/commons-codec-1.10.jar"/>
+	<classpathentry kind="lib" path="Resources/commons-collections4-4.1.jar"/>
+	<classpathentry kind="lib" path="Resources/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="Resources/curvesapi-1.04.jar"/>
+	<classpathentry kind="lib" path="Resources/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="Resources/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="Resources/poi-3.15.jar"/>
+	<classpathentry kind="lib" path="Resources/poi-examples-3.15.jar"/>
+	<classpathentry kind="lib" path="Resources/poi-excelant-3.15.jar"/>
+	<classpathentry kind="lib" path="Resources/poi-ooxml-3.15.jar"/>
+	<classpathentry kind="lib" path="Resources/poi-ooxml-schemas-3.15.jar"/>
+	<classpathentry kind="lib" path="Resources/poi-scratchpad-3.15.jar"/>
+	<classpathentry kind="lib" path="Resources/xmlbeans-2.6.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
