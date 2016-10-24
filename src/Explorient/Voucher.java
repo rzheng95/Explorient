@@ -56,6 +56,7 @@ import javax.swing.SwingConstants;
 import javax.swing.JTabbedPane;
 import javax.swing.JSeparator;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JSpinner;
@@ -84,6 +85,7 @@ public class Voucher extends JFrame
 	private JButton btnCreate, btnUpdate, btnDelete;
 	private List<Object> printContent;
 	private JCheckBox chckbxSnack, chckbxDinner, chckbxBreakfast, chckbxLunch;
+	private JFileChooser chooser;
 
 	/**
 	 * Launch the application.
@@ -596,19 +598,28 @@ public class Voucher extends JFrame
 		mntmPrint.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(textFieldBookingNumber.getText().equals("")) return;
-				// 1. booking # 
-				// 2. issue date
-				// 3. passenger names
-				// 4. services
-				// 5. service provider info 
+
+				int booking = Integer.parseInt(textFieldBookingNumber.getText());
 				
-		
-					try {
-						PrintVoucher pv = new PrintVoucher(15001);
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+				chooser = new JFileChooser(); 
+				
+				
+			    chooser.setCurrentDirectory(new java.io.File("."));
+			    //chooser.setDialogTitle(choosertitle);
+			    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			    
+			    String directory = "";
+			    // disable the "All files" option.
+			    chooser.setAcceptAllFileFilterUsed(false);			     
+			    if (chooser.showOpenDialog(getContentPane()) == JFileChooser.APPROVE_OPTION) 
+			    	directory = chooser.getSelectedFile().toString()+"\\";
+	
+				try {
+					PrintVoucher pv = new PrintVoucher(booking, directory);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 
 			}
 		});
