@@ -57,6 +57,7 @@ public class InformationCenter extends JFrame {
 	private JLabel lblContact;
 	private JLabel lblLocalPhone;
 	private JLabel lblFax;
+	private JLabel lblVendor;
 	private JLabel lblStreet;
 	private JTextField textFieldName;
 	private JTextField textFieldContact;
@@ -212,7 +213,8 @@ public class InformationCenter extends JFrame {
 					textFieldState.setText(rs.getString("State"));
 					textFieldCountry.setText(rs.getString("Country"));
 					textFieldZipcode.setText(rs.getString("Zipcode"));
-					textFieldVendor.setText(rs.getString("Vendor"));
+					if(comboBoxTable.getSelectedItem().toString().equals("Hotels"))
+						textFieldVendor.setText(rs.getString("Vendor"));
 					btnDelete.setEnabled(true);
 					btnUpdate.setEnabled(true);
 					pst.close();		
@@ -237,16 +239,20 @@ public class InformationCenter extends JFrame {
 						lblHotelName.setText("Hotel Name:");
 						lblContact.setText("Contact:");
 						lblLocalPhone.setText("Local Phone:");
+						lblVendor.setVisible(true);
+						textFieldVendor.setVisible(true);
 						clear();
 					}
-					else if(e.getItem().equals("Land Services"))
+					else if(e.getItem().equals("Vendors"))
 					{
-						refreshTable("LandServices");
+						refreshTable("Vendors");
 						comboBoxColumn.setModel(new DefaultComboBoxModel(new String[] {"LS Code", "LS Name", "Contact", "Local Phone", "Fax", "Street", "City", "State/Province", "Country", "Zip Code"}));
 						lblHotelCode.setText("LS Code:");
 						lblHotelName.setText("LS Name:");
 						lblContact.setText("Contact:");
 						lblLocalPhone.setText("Local Phone:");
+						lblVendor.setVisible(false);
+						textFieldVendor.setVisible(false);
 						clear();
 					}
 					else if(e.getItem().equals("Agents"))
@@ -262,7 +268,7 @@ public class InformationCenter extends JFrame {
 				}
 			}
 		});
-		comboBoxTable.setModel(new DefaultComboBoxModel(new String[] {"Hotels", "Land Services", "Agents"}));
+		comboBoxTable.setModel(new DefaultComboBoxModel(new String[] {"Hotels", "Vendors", "Agents"}));
 		comboBoxTable.setBounds(10, 10, 100, 20);
 		contentPane.add(comboBoxTable);
 		
@@ -556,7 +562,7 @@ public class InformationCenter extends JFrame {
 					pst = connection.prepareStatement(query);
 					if(table.equals("Hotels"))
 						pst.setString(1, "EXPH"+HLAID);
-					else if(table.equals("Land Services"))
+					else if(table.equals("Vendors"))
 						pst.setString(1, "EXPL"+HLAID);
 					else
 						pst.setString(1, "EXPA"+HLAID);
@@ -610,10 +616,10 @@ public class InformationCenter extends JFrame {
 		lblWarningMessage.setBounds(10, 704, 470, 20);
 		contentPane.add(lblWarningMessage);
 		
-		JLabel vendor = new JLabel("Vendor:");
-		vendor.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		vendor.setBounds(10, 660, 110, 20);
-		contentPane.add(vendor);
+		lblVendor = new JLabel("Vendor:");
+		lblVendor.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblVendor.setBounds(10, 660, 110, 20);
+		contentPane.add(lblVendor);
 		
 		textFieldVendor = new JTextField();
 		textFieldVendor.setFont(new Font("Tahoma", Font.PLAIN, 12));
