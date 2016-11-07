@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.JComboBox;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -34,8 +33,8 @@ public class AutocompleteJComboBox extends JComboBox{
 	static final long serialVersionUID = 4321421L;
 
 	
-
-	private final Searchable<String,String> searchable;
+	// it was final
+	private Searchable<String,String> searchable;
 
 	
 
@@ -46,7 +45,12 @@ public class AutocompleteJComboBox extends JComboBox{
 	 * @param s
 
 	 */
-
+	
+	//added method for Voucher
+	public void setSeachable(Searchable<String,String> s)
+	{
+		this.searchable = s;
+	}
 	public AutocompleteJComboBox(Searchable<String,String> s){
 
 		super();
@@ -149,6 +153,7 @@ public class AutocompleteJComboBox extends JComboBox{
 
 				public void focusGained(FocusEvent arg0) {
 
+					
 					if ( tc.getText().length() > 0 ){
 
 						setPopupVisible(true);
@@ -157,7 +162,7 @@ public class AutocompleteJComboBox extends JComboBox{
 
 				}
 
-
+				
 
 				@Override
 
@@ -168,6 +173,8 @@ public class AutocompleteJComboBox extends JComboBox{
 				
 
 			});
+			
+
 
 		}else{
 

@@ -19,14 +19,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JTextField;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import java.awt.Color;
-import java.awt.Cursor;
-
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.JButton;
 import java.awt.event.KeyAdapter;
@@ -34,33 +29,20 @@ import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-
-import javax.swing.JEditorPane;
-import javax.swing.JTextPane;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.FormSpecs;
-import com.jgoodies.forms.layout.RowSpec;
-
 import autoCompleteComboBox.AutocompleteJComboBox;
 import autoCompleteComboBox.StringSearchable;
 
 import javax.swing.JSeparator;
-import javax.swing.DropMode;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -68,7 +50,7 @@ public class CreateNewBooking extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private Connection connection = null;
-	private int booking, passenger;
+	private int booking, passenger, agentID;
 	private JPanel contentPane;
 	private Image icon;
 	private JTextField textFieldAgentName;
@@ -83,13 +65,14 @@ public class CreateNewBooking extends JFrame {
 	private JTextField textFieldCountry;
 	private JTextField textFieldZipcode;
 	private JLabel lblPassengerWarning, lblAgentWarning;
-	private JButton btnFinalize;
+	private JButton btnFinalize, btnAdd;
 	private ArrayList<String> agentList;;
 	private AutocompleteJComboBox comboBoxAgentCode;
 	private JTextField textFieldState;
 	private JXDatePicker datePickerDeparture;
 	private JButton btnDelete;
 	private JTextField textFieldFax;
+	private JTextField textFieldBookingNumber;
 
 	/**
 	 * Launch the application.
@@ -139,6 +122,7 @@ public class CreateNewBooking extends JFrame {
 			Statement stmt = connection.createStatement();
 			ResultSet rs = stmt.executeQuery(query);	
 			agentList = new ArrayList<>();
+			agentList.add("");
 			while(rs.next()){
 				String aCode = rs.getString("AgentCode");	
 				String aName = rs.getString("AgentName");	
@@ -236,60 +220,42 @@ public class CreateNewBooking extends JFrame {
 		textFieldAttention.setColumns(10);
 		
 		JLabel lblDeparture = new JLabel("Departure:");
-		lblDeparture.setBounds(10, 360, 90, 20);
+		lblDeparture.setBounds(10, 390, 90, 20);
 		lblDeparture.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		
 		datePickerDeparture = new JXDatePicker();
-		datePickerDeparture.setBounds(100, 360, 200, 23);
-		
+		datePickerDeparture.setBounds(100, 390, 200, 23);
 		
 		JLabel lblPassengerNames = new JLabel("Pax names:");
-		lblPassengerNames.setBounds(10, 420, 90, 20);
+		lblPassengerNames.setBounds(10, 450, 90, 20);
 		lblPassengerNames.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		
 		textFieldPaxNames = new JTextField();
-		textFieldPaxNames.setBounds(100, 420, 200, 23);
+
+		textFieldPaxNames.setToolTipText("Lastname   Firstname-Middlename");
+		textFieldPaxNames.setBounds(100, 450, 200, 23);
 		textFieldPaxNames.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		textFieldPaxNames.addKeyListener(new KeyAdapter() {
 			@Override
-			public void keyPressed(KeyEvent event) {
+			public void keyPressed(KeyEvent event) {			
 				char c = event.getKeyChar();
-				if(c==KeyEvent.VK_ENTER){
-					String s = textFieldPaxNames.getText().trim();
-					while(s.contains("  "))
-						s = s.replace("  ", " ");
-					if(s.contains(" ")){
-						String[] list = s.split(" ");
-						for(int i=0; i<list.length; i++)
-						{
-							if(list[i].contains("-"))
-							{
-								String[] temp = list[i].split("-");
-								list[i] = "";
-								for(int j=0; j<temp.length; j++)
-								{
-									temp[j] = temp[j].substring(0, 1).toUpperCase() + temp[j].substring(1).toLowerCase();		
-									if(j==temp.length-1)
-										list[i] += temp[j];
-									else
-										list[i] += temp[j]+ "-";
-								}
-							}
-							else
-							{
-								list[i] = list[i].substring(0, 1).toUpperCase() + list[i].substring(1).toLowerCase();
-							}
-						}
-						model.addRow(list);
-					}
-					textFieldPaxNames.setText("");
+				if(c==KeyEvent.VK_ENTER){					
+					addPaxName();				
 				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if(textFieldPaxNames.getText().equals(""))
+					btnAdd.setEnabled(false);
+				else 
+					btnAdd.setEnabled(true);
 			}
 		});
 		textFieldPaxNames.setColumns(10);
 		
 		btnFinalize = new JButton("Finalize & Create Booking");
-		btnFinalize.setBounds(10, 482, 290, 40);
+		btnFinalize.setBounds(10, 506, 480, 40);
 		btnFinalize.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {		
 				if(comboBoxAgentCode.getSelectedItem() == null || 
@@ -307,9 +273,65 @@ public class CreateNewBooking extends JFrame {
 				{
 					lblAgentWarning.setText("");
 				}
+
+				if(textFieldBookingNumber.getText().equals(""))
+				{
+					lblPassengerWarning.setText("Booking Number Field Can Not be Empty!");
+					return;
+				}
+				else if(datePickerDeparture.getDate() == null)
+				{
+					lblPassengerWarning.setText("You Must Select a Departure Date!");
+					return;
+				}
+				else if(comboBoxGateway.getSelectedItem().toString().trim().equals(""))
+				{
+					lblPassengerWarning.setText("Gateway Field Can Not be Empty!");
+					return;
+				}
+				else if(tablePassengerCount() <= 0)
+				{
+					lblPassengerWarning.setText("You Can Not have 0 passenger");
+					return;
+				}
+				else
+				{
+					lblPassengerWarning.setText("");
+				}
 				
-				// add agent if not already exist to db				
+				ArrayList<Integer> existedBookingNumber = new ArrayList<>();
+				// check if booking exists
+				try{				
+					String query = "select BookingNumber from Passengers";
+					Statement stmt = connection.createStatement();
+					ResultSet rs = stmt.executeQuery(query);	
+
+					int b = Integer.parseInt(textFieldBookingNumber.getText());
+					while(rs.next())					
+						if(rs.getInt("BookingNumber") == b){
+							JOptionPane.showMessageDialog(null, "Booking "+b+" already exists", "Exception", JOptionPane.ERROR_MESSAGE);
+							textFieldBookingNumber.setText("");
+							return;
+						}
+					booking = b;
+						
+					stmt.close();
+					rs.close();
+				}catch(Exception e1){e1.printStackTrace();}	
+
+				// grab ID from IDs
+				try{				
+					String query = "select * from IDs where EXPID=1 ";
+					Statement stmt = connection.createStatement();
+					ResultSet rs = stmt.executeQuery(query);	
+					agentID = rs.getInt("Agent");	
+					passenger = rs.getInt("Passenger");
+					agentID++;
+					stmt.close();
+					rs.close();
+				}catch(Exception e1){e1.printStackTrace();}	
 				
+				// add agent if not already exist to db								
 				String str = comboBoxAgentCode.getSelectedItem().toString();
 				String[] agentCodeAndName = str.split(" ");
 				String agentCode = agentCodeAndName[0];
@@ -334,18 +356,6 @@ public class CreateNewBooking extends JFrame {
 				
 				if(!agentExist)
 				{
-					// grab ID from IDs
-					int agentID = -1;
-					try{				
-						String query = "select * from IDs where EXPID=1 ";
-						Statement stmt = connection.createStatement();
-						ResultSet rs = stmt.executeQuery(query);	
-						agentID = rs.getInt("Agent");	
-						agentID++;
-						stmt.close();
-						rs.close();
-					}catch(Exception e1){e1.printStackTrace();}	
-					
 					if(agentID != -1)
 					{
 						// add agent
@@ -367,6 +377,7 @@ public class CreateNewBooking extends JFrame {
 							pst.setString(10, textFieldTelephone.getText());
 							pst.setString(11, textFieldFax.getText());
 				
+							JOptionPane.showMessageDialog(null, "New Agent Added to Database.");
 							pst.execute();								
 							pst.close();
 							
@@ -382,71 +393,35 @@ public class CreateNewBooking extends JFrame {
 							e1.printStackTrace();
 						}
 					}
-				}
+				}// done adding agent			
 				
-								
-				
-				
-				if(datePickerDeparture.getDate() == null || comboBoxGateway.getSelectedItem().toString().trim().equals(""))
-				{
-					lblPassengerWarning.setText("Passenger Info Imcomplete!");
-					lblPassengerWarning.setForeground(Color.red);
-					return;
-				}
-				
-				if(tablePassengerCount() > 0) 
-				{
-					lblPassengerWarning.setText("");
-					btnFinalize.setBackground(Color.blue);
-					// fetch data from IDs, grab booking and passenger # from IDs
-					try{				
-						String query = "select * from IDs where EXPID=1 ";
-						Statement stmt = connection.createStatement();
-						ResultSet rs = stmt.executeQuery(query);	
-	
-						booking = rs.getInt("Booking");	
-						booking++; // increment booking #
-						passenger = rs.getInt("Passenger");	
-						stmt.close();
-						rs.close();
-					}catch(Exception e1){
-						e1.printStackTrace();
-					}	
 
-					// update PaxInfos database					
-					addPassengers();
-												
-					// update booking and passenger in IDs
-					try{				
-						String query = "Update IDs set EXPID='"+1+"' ,Booking='"+booking+"' ,Passenger='"+passenger+"' where EXPID='"+1+"'  ";
-						PreparedStatement pst = connection.prepareStatement(query);
-						pst.execute();					
-						//JOptionPane.showMessageDialog(null, "Booking and passenger IDs Updated");					
-						pst.close();
-						}catch(Exception e1){
-						e1.printStackTrace();
-					}
-					
-					clearAll();
-			
-					JOptionPane.showMessageDialog(null, "Booking "+booking+" has been created.", "New Booking", JOptionPane.PLAIN_MESSAGE);
-					dispose();
-					Voucher v = new Voucher(""+booking);
-					v.setVisible(true);
-					v.refreshTable();
-				}
-				else
-				{
-					lblPassengerWarning.setText("Can't have 0 passenger");
-					lblPassengerWarning.setForeground(Color.red);
-					btnFinalize.setBackground(Color.red);
-				}
+
+				// add passengers to db				
+				addPassengers();
+											
+				// update passenger in IDs
+				try{				
+					String query = "Update IDs set EXPID='"+1+"' ,Passenger='"+passenger+"' where EXPID='"+1+"'  ";
+					PreparedStatement pst = connection.prepareStatement(query);
+					pst.execute();								
+					pst.close();
+				}catch(Exception e1){e1.printStackTrace();}
+				
+				
+				JOptionPane.showMessageDialog(null, "Booking "+booking+" has been created.", "New Booking", JOptionPane.PLAIN_MESSAGE);
+				//clearAll();
+				dispose();
+				Voucher v = new Voucher(""+booking);
+				v.setVisible(true);
+				v.refreshTable();
+				v.enableEditing(true);					
 			}
 		});
 		btnFinalize.setFont(new Font("Tahoma", Font.BOLD, 13));
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(330, 10, 160, 436);
+		scrollPane.setBounds(330, 40, 160, 400);
 		
 		model = new DefaultTableModel();
 		
@@ -466,12 +441,12 @@ public class CreateNewBooking extends JFrame {
 		scrollPane.setViewportView(table);
 		
 		JLabel lblGateway = new JLabel("Gateway:");
-		lblGateway.setBounds(10, 390, 90, 20);
+		lblGateway.setBounds(10, 420, 90, 20);
 		lblGateway.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		
-		btnDelete = new JButton("Delete");
+		btnDelete = new JButton("Remove");
 		btnDelete.setEnabled(false);
-		btnDelete.setBounds(427, 460, 63, 23);
+		btnDelete.setBounds(415, 450, 75, 23);
 		btnDelete.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(table.getSelectedRow() == -1) return;
@@ -538,24 +513,26 @@ public class CreateNewBooking extends JFrame {
 		
 		lblPassengerWarning = new JLabel("");
 		lblPassengerWarning.setFont(new Font("Tahoma", Font.BOLD, 12));
-		lblPassengerWarning.setBounds(10, 450, 290, 20);
+		lblPassengerWarning.setBounds(10, 485, 290, 20);
+		lblPassengerWarning.setForeground(Color.red);
 		contentPane.add(lblPassengerWarning);	
 
 		
 		StringSearchable searchable = new StringSearchable(agentList);
 
 		comboBoxAgentCode = new AutocompleteJComboBox(searchable);
+		comboBoxAgentCode.setModel(new DefaultComboBoxModel(agentList.toArray()));
 
 		
 		comboBoxAgentCode.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		comboBoxAgentCode.setBounds(100, 10, 150, 23);
+		comboBoxAgentCode.setBounds(100, 10, 330, 23);
 		contentPane.add(comboBoxAgentCode);
 		
 		JButton btnFill = new JButton("Fill");
 		btnFill.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 		
-				if(comboBoxAgentCode.getSelectedItem() == null) return;
+				if(comboBoxAgentCode.getSelectedItem() == null || comboBoxAgentCode.getSelectedItem().equals("")) return;
 				boolean existInAgentList = false;
 				for(String s : agentList)
 					if(comboBoxAgentCode.getSelectedItem().toString().equals(s))
@@ -586,7 +563,7 @@ public class CreateNewBooking extends JFrame {
 				}
 			}
 		});
-		btnFill.setBounds(250, 10, 50, 23);
+		btnFill.setBounds(435, 11, 55, 23);
 		contentPane.add(btnFill);
 		
 		JLabel lblState = new JLabel("State:");
@@ -607,10 +584,10 @@ public class CreateNewBooking extends JFrame {
 		contentPane.add(lblAgentWarning);
 		
 		comboBoxGateway = new JComboBox();
-		comboBoxGateway.setModel(new DefaultComboBoxModel(new String[] {"Land Only"}));
+		comboBoxGateway.setModel(new DefaultComboBoxModel(new String[] {"", "Land Only", "Air  & Land"}));
 		comboBoxGateway.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		comboBoxGateway.setEditable(true);
-		comboBoxGateway.setBounds(100, 390, 200, 23);
+		comboBoxGateway.setBounds(100, 420, 200, 23);
 		contentPane.add(comboBoxGateway);
 		
 		JLabel lblFax = new JLabel("Fax:");
@@ -623,6 +600,38 @@ public class CreateNewBooking extends JFrame {
 		textFieldFax.setColumns(10);
 		textFieldFax.setBounds(100, 280, 200, 23);
 		contentPane.add(textFieldFax);
+		
+		JLabel lblBookingNumber = new JLabel("Booking #:");
+		lblBookingNumber.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblBookingNumber.setBounds(10, 360, 90, 20);
+		contentPane.add(lblBookingNumber);
+		
+		textFieldBookingNumber = new JTextField();
+		textFieldBookingNumber.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				if(!(Character.isDigit(c) || (c==KeyEvent.VK_BACK_SPACE) || c==KeyEvent.VK_DELETE)){
+					getToolkit().beep();
+					e.consume();// unable to press that key
+				}
+			}
+		});
+		textFieldBookingNumber.setToolTipText("");
+		textFieldBookingNumber.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		textFieldBookingNumber.setColumns(10);
+		textFieldBookingNumber.setBounds(100, 360, 200, 23);
+		contentPane.add(textFieldBookingNumber);
+		
+		btnAdd = new JButton("Add");
+		btnAdd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				addPaxName();
+			}
+		});
+		btnAdd.setEnabled(false);
+		btnAdd.setBounds(330, 450, 75, 23);
+		contentPane.add(btnAdd);
 
 			
 	}
@@ -692,6 +701,39 @@ public class CreateNewBooking extends JFrame {
 				}
 			}
 		}
+	}
+	
+	public void addPaxName()
+	{
+		String s = textFieldPaxNames.getText().trim();
+		while(s.contains("  "))
+			s = s.replace("  ", " ");
+		if(s.contains(" ")){
+			String[] list = s.split(" ");
+			for(int i=0; i<list.length; i++)
+			{
+				if(list[i].contains("-"))
+				{
+					String[] temp = list[i].split("-");
+					list[i] = "";
+					for(int j=0; j<temp.length; j++)
+					{
+						temp[j] = temp[j].substring(0, 1).toUpperCase() + temp[j].substring(1).toLowerCase();		
+						if(j==temp.length-1)
+							list[i] += temp[j];
+						else
+							list[i] += temp[j]+ "-";
+					}
+				}
+				else
+				{
+					list[i] = list[i].substring(0, 1).toUpperCase() + list[i].substring(1).toLowerCase();
+				}
+			}
+			model.addRow(list);
+		}
+		textFieldPaxNames.setText("");
+		btnAdd.setEnabled(false);
 	}
 	
 	public void clearAll()

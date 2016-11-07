@@ -15,17 +15,17 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 
 import org.jdesktop.swingx.JXDatePicker;
 
+import autoCompleteComboBox.AutocompleteJComboBox;
+import autoCompleteComboBox.StringSearchable;
+
 import javax.swing.JButton;
-import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -35,8 +35,6 @@ import java.awt.Font;
 import java.awt.Image;
 
 import javax.swing.JTextField;
-import javax.swing.LayoutStyle.ComponentPlacement;
-
 import net.proteanit.sql.DbUtils;
 
 import javax.swing.JTable;
@@ -47,26 +45,22 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.print.PrinterException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-import javax.swing.SwingConstants;
 import javax.swing.JTabbedPane;
-import javax.swing.JSeparator;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JSpinner;
-import javax.swing.JInternalFrame;
 import javax.swing.JTextArea;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import javax.swing.JCheckBox;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 
 public class Voucher extends JFrame 
@@ -76,9 +70,9 @@ public class Voucher extends JFrame
 	private JTable tableVoucher;
 	private Image icon;
 	private JTable tablePassengers;
-	private JComboBox comboBoxType, comboBoxManifest, comboBoxRoomType;
+	private JComboBox comboBoxType, comboBoxRoomType;
 	private JSpinner spinnerPassenger, spinnerNight, spinnerNumOfRoom;
-	private JXDatePicker datePickerCheckIn;
+	private JXDatePicker datePickerCheckIn, datePickerIssueDate;
 	private JTextArea textAreaService;
 	private int voucher;
 	private String voucherID;
@@ -86,7 +80,12 @@ public class Voucher extends JFrame
 	private List<Object> printContent;
 	private JCheckBox chckbxDinner, chckbxBreakfast, chckbxLunch;
 	private JFileChooser chooser;
-	private JLabel lblManifest;
+	private JLabel lblManifest, lblNight, lblTour, lblPassengers;
+	private JComboBox comboBoxRoomSize;
+	private AutocompleteJComboBox comboBoxVendors;
+	private JLabel lblIssueDate;
+	private JCheckBox chckbxIssueDate;
+	private ArrayList<String> vendorList;
 	
 
 	/**
@@ -106,9 +105,10 @@ public class Voucher extends JFrame
 	}
 
 
-	/**
-	 * Create the frame.
-	 */
+	public void enableEditing(boolean b)
+	{
+		btnCreate.setEnabled(b);
+	}
 	public Voucher(String bookingNumber) {
 		try{UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}catch(Exception e){}
 		// establish connection to database
@@ -125,7 +125,7 @@ public class Voucher extends JFrame
 		}
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1246, 662);
+		setBounds(100, 100, 1246, 747);
 		//setResizable(false);
 		setTitle("Voucher");
 		setLocationRelativeTo(null);
@@ -149,17 +149,13 @@ public class Voucher extends JFrame
 					ResultSet rs = pst.executeQuery();
 					tableVoucher.setModel(DbUtils.resultSetToTableModel(rs));
 					
-					//refreshTable("B"+textFieldBookingNumber.getText(), "Voucher");
-					
-					btnCreate.setEnabled(true);
-					btnUpdate.setEnabled(true);
+					enableEditing(true);
 					pst.close();
 					rs.close();	
 				}catch(Exception e1){
 					DefaultTableModel model = (DefaultTableModel)tableVoucher.getModel();
 					model.setRowCount(0);
-					btnCreate.setEnabled(false);
-					btnUpdate.setEnabled(false);
+					enableEditing(false);
 					//e1.printStackTrace();
 				}
 				
@@ -185,49 +181,7 @@ public class Voucher extends JFrame
 				}		
 				
 				
-				/*
-				try{
-					String query = "select * from B"+textFieldBookingNumber.getText();					
-					PreparedStatement pst = connection.prepareStatement(query);
-					ResultSet rs = pst.executeQuery();
-					tableVoucher.setModel(DbUtils.resultSetToTableModel(rs));
-					
-					refreshTable("B"+textFieldBookingNumber.getText(), "Voucher");
-					
-					btnCreate.setEnabled(true);
-					btnUpdate.setEnabled(true);
-					pst.close();
-					rs.close();	
-				}catch(Exception e1){
-					DefaultTableModel model = (DefaultTableModel)tableVoucher.getModel();
-					model.setRowCount(0);
-					btnCreate.setEnabled(false);
-					btnUpdate.setEnabled(false);
-					//e1.printStackTrace();
-				}
 				
-				try{							
-					String query = "select * from PaxInfos where BookingNumber="+textFieldBookingNumber.getText();
-					PreparedStatement pst = connection.prepareStatement(query);
-					ResultSet rs = pst.executeQuery();
-							
-					tablePassengers.setModel(DbUtils.resultSetToTableModel(rs));	
-					// grab # of pax
-					rs = pst.executeQuery();
-					int count = 0;
-					while(rs.next())
-						count++;
-					spinnerPassenger.setValue(count);
-
-					pst.close();
-					rs.close();
-				}catch(Exception e1){
-					DefaultTableModel model = (DefaultTableModel)tablePassengers.getModel();
-					model.setRowCount(0);
-					//e1.printStackTrace();
-				}			
-				
-				*/
 			}
 			@Override
 			public void keyTyped(KeyEvent event) {
@@ -241,7 +195,7 @@ public class Voucher extends JFrame
 		textFieldBookingNumber.setColumns(10);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(220, 9, 1000, 545);
+		tabbedPane.setBounds(10, 166, 1210, 521);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		tabbedPane.addTab("Voucher", null, scrollPane, null);
@@ -264,13 +218,22 @@ public class Voucher extends JFrame
 					spinnerPassenger.setValue(rs.getInt("NumOfPax"));
 					spinnerNight.setValue(rs.getInt("NumOfNight"));
 					spinnerNumOfRoom.setValue(rs.getInt("NumOfRoom"));
+					chckbxIssueDate.setVisible(false);
+					datePickerIssueDate.setVisible(true);
+					lblIssueDate.setLocation(900, 115);
+					String[] dateArr = rs.getString("IssueDate").split("/");
+					Date d = new Date((Integer.parseInt(dateArr[2])-1900),(Integer.parseInt(dateArr[0])-1),Integer.parseInt(dateArr[1]));
+					datePickerIssueDate.setDate(d);
+					
+					
+					
 					// Date picker
 					// JOptionPane.showMessageDialog(null, "The day is "+d.getDate()+" Year is "+(d.getYear()+1900)+" the month is "+(d.getMonth()+1));
 					//String date = rs.getString("Date");
-					String[] dateArr = rs.getString("Date").split("/");
-					Date d = new Date((Integer.parseInt(dateArr[2])-1900),(Integer.parseInt(dateArr[0])-1),Integer.parseInt(dateArr[1]));
+					dateArr = rs.getString("Date").split("/");
+					d = new Date((Integer.parseInt(dateArr[2])-1900),(Integer.parseInt(dateArr[0])-1),Integer.parseInt(dateArr[1]));
 					datePickerCheckIn.setDate(d);
-					comboBoxManifest.setSelectedItem(rs.getString("Vendor"));
+					comboBoxVendors.setSelectedItem(rs.getString("Vendor"));
 					textAreaService.setText(rs.getString("Service"));		
 					String meal = rs.getString("Meal");
 					
@@ -296,6 +259,7 @@ public class Voucher extends JFrame
 			@Override
 			public void mousePressed(MouseEvent e) {
 				btnDelete.setEnabled(true);
+				btnUpdate.setEnabled(true);
 			}
 
 		});
@@ -313,9 +277,9 @@ public class Voucher extends JFrame
 		getContentPane().add(textFieldBookingNumber);
 		getContentPane().add(tabbedPane);
 		
-		JLabel lblType = new JLabel("Type:");
+		JLabel lblType = new JLabel("Voucher:");
 		lblType.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblType.setBounds(10, 50, 80, 20);
+		lblType.setBounds(10, 80, 80, 20);
 		getContentPane().add(lblType);
 		
 		comboBoxType = new JComboBox();
@@ -323,90 +287,149 @@ public class Voucher extends JFrame
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == 1)
 				{
-					loadManifest();
+					loadVendors();
+					StringSearchable searchable = new StringSearchable(vendorList);
+					comboBoxVendors.setSeachable(searchable);
+					comboBoxVendors.setModel(new DefaultComboBoxModel(vendorList.toArray()));	
 					if(e.getItem().equals("Hotel"))
 					{
 						lblManifest.setText("Hotel:");
 						comboBoxRoomType.setEditable(true);
 						comboBoxRoomType.setEnabled(true);
+						comboBoxRoomSize.setEditable(true);
+						comboBoxRoomSize.setEnabled(true);
 						spinnerNight.setEnabled(true);
 						spinnerNumOfRoom.setEnabled(true);
+						textAreaService.setEditable(false);
+						textAreaService.setEnabled(false);
+						textAreaService.setText("");
+						textAreaService.setVisible(false);
+						lblTour.setVisible(false);
+						
 					}
 					else
 					{
 						comboBoxRoomType.setSelectedItem("");
 						comboBoxRoomType.setEditable(false);
 						comboBoxRoomType.setEnabled(false);	
+						comboBoxRoomSize.setSelectedItem("");
+						comboBoxRoomSize.setEditable(false);
+						comboBoxRoomSize.setEnabled(false);	
 						chckbxBreakfast.setSelected(false);
 						lblManifest.setText("Vendor:");
 						spinnerNight.setValue(0);
 						spinnerNight.setEnabled(false);
 						spinnerNumOfRoom.setValue(0);
 						spinnerNumOfRoom.setEnabled(false);
+						textAreaService.setEditable(true);
+						textAreaService.setEnabled(true);
+						textAreaService.setVisible(true);
+						lblTour.setVisible(true);
 					}
 				}
 			}
 		});
 		comboBoxType.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		comboBoxType.setModel(new DefaultComboBoxModel(new String[] {"Hotel", "Land Service", "Air Ticket"}));
-		comboBoxType.setBounds(100, 50, 110, 23);
+		comboBoxType.setBounds(100, 80, 110, 23);
 		getContentPane().add(comboBoxType);
 		
 		datePickerCheckIn = new JXDatePicker();
 		datePickerCheckIn.getEditor().setFont(new Font("Tahoma", Font.PLAIN, 11));
-		datePickerCheckIn.setBounds(100, 210, 110, 20);
+		datePickerCheckIn.setBounds(305, 80, 225, 20);
 		getContentPane().add(datePickerCheckIn);
+		
+
 		
 		
 		JLabel lblDateCheckIn = new JLabel("Check In:");
 		lblDateCheckIn.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblDateCheckIn.setBounds(10, 210, 80, 20);
+		lblDateCheckIn.setBounds(230, 80, 80, 20);
 		getContentPane().add(lblDateCheckIn);
 		
-		JLabel lblNight = new JLabel("# of Night:");
+		lblNight = new JLabel("Night");
 		lblNight.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblNight.setBounds(10, 170, 80, 20);
+		lblNight.setBounds(290, 45, 50, 20);
 		getContentPane().add(lblNight);
 		
 		spinnerPassenger = new JSpinner();
+		spinnerPassenger.setValue(1);
+		spinnerPassenger.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if(Integer.parseInt(spinnerPassenger.getValue().toString()) < 1)
+				{
+					spinnerPassenger.setValue(1);
+				}
+			}
+		});
 		spinnerPassenger.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		spinnerPassenger.setBounds(100, 130, 110, 23);
+		spinnerPassenger.setBounds(100, 45, 110, 23);
 		getContentPane().add(spinnerPassenger);
 		
-		JLabel lblService = new JLabel("Services:");
-		lblService.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblService.setBounds(10, 370, 80, 20);
-		getContentPane().add(lblService);
+		lblTour = new JLabel("Service:");
+		lblTour.setVisible(false);
+		lblTour.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblTour.setBounds(555, 80, 63, 20);
+		getContentPane().add(lblTour);
 		
 		textAreaService = new JTextArea();
+		textAreaService.setVisible(false);
+		textAreaService.setEditable(false);
+		textAreaService.setEnabled(false);
 		textAreaService.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		Border border = BorderFactory.createLineBorder(Color.black);
 		textAreaService.setBorder(border);
 		textAreaService.setLineWrap(true);
 		textAreaService.setWrapStyleWord(true);
-		textAreaService.setBounds(10, 390, 190, 83);
+		textAreaService.setBounds(622, 80, 598, 23);
 		getContentPane().add(textAreaService);
 		
-		JLabel lblPassengers = new JLabel("Passenger:");
+		lblPassengers = new JLabel("Passenger:");
 		lblPassengers.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblPassengers.setBounds(10, 130, 80, 20);
+		lblPassengers.setBounds(10, 45, 80, 20);
 		getContentPane().add(lblPassengers);
 		
 		spinnerNight = new JSpinner();
+		spinnerNight.setValue(1);
+		spinnerNight.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				if(Integer.parseInt(spinnerNight.getValue().toString()) > 1)
+					lblNight.setText("Nights");				
+				else
+				{
+					lblNight.setText("Night");
+					spinnerNight.setValue(1);
+				}
+			}
+		});
 		spinnerNight.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		spinnerNight.setBounds(100, 170, 110, 23);
+		spinnerNight.setBounds(230, 45, 50, 23);
 		getContentPane().add(spinnerNight);
 		
 		lblManifest = new JLabel("Hotel:");
 		lblManifest.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblManifest.setBounds(10, 250, 80, 20);
+		lblManifest.setBounds(230, 10, 70, 20);
 		getContentPane().add(lblManifest);
 		
-		comboBoxManifest = new JComboBox();
-		comboBoxManifest.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		comboBoxManifest.setEditable(true);
-		comboBoxManifest.setBounds(100, 250, 110, 23);
-		getContentPane().add(comboBoxManifest);
+		
+		loadVendors();
+		StringSearchable searchable = new StringSearchable(vendorList);
+
+		comboBoxVendors = new AutocompleteJComboBox(searchable);
+		
+		comboBoxVendors.setModel(new DefaultComboBoxModel(vendorList.toArray()));	
+		
+		
+		comboBoxVendors.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		comboBoxVendors.setBounds(305, 10, 915, 23);
+		getContentPane().add(comboBoxVendors);
+		
+		
+//		comboBoxVendors = new JComboBox();
+//		comboBoxVendors.setFont(new Font("Tahoma", Font.PLAIN, 12));
+//		comboBoxVendors.setEditable(true);
+//		comboBoxVendors.setBounds(305, 10, 915, 23);
+//		getContentPane().add(comboBoxVendors);
 		
 		btnCreate = new JButton("Create");
 		btnCreate.setEnabled(false);
@@ -430,6 +453,19 @@ public class Voucher extends JFrame
 				try{					
 					String query;
 					PreparedStatement pst;
+					
+					String issueDate = "";
+					if(chckbxIssueDate.isSelected())
+					{
+						Date today = Calendar.getInstance().getTime();
+						issueDate =(today.getMonth()+1)+"/"+today.getDate()+"/"+(today.getYear()+1900);
+					}
+					else
+					{
+						Date selectedDate = datePickerIssueDate.getDate();
+						issueDate =(selectedDate.getMonth()+1)+"/"+selectedDate.getDate()+"/"+(selectedDate.getYear()+1900);
+					}
+					
 					Date d = datePickerCheckIn.getDate();		
 					String meal = "";
 					if(chckbxBreakfast.isSelected())
@@ -440,7 +476,7 @@ public class Voucher extends JFrame
 						meal += "D ";
 					if(comboBoxType.getSelectedItem().equals("Hotel"))
 					{
-						query = "insert into Vouchers (VoucherID,BookingNumber,VoucherType,NumOfPax,NumOfRoom,NumOfNight,RoomType,Date,Vendor,Meal,Service,IssueDate) values (?,?,?,?,?,?,?,?,?,?,?,?)";
+						query = "insert into Vouchers (VoucherID,BookingNumber,VoucherType,NumOfPax,NumOfRoom,NumOfNight,RoomSize,RoomType,Date,Vendor,Meal,Service,IssueDate) values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 						pst = connection.prepareStatement(query);
 						pst.setString(1, "EXPV"+voucher);
 						pst.setInt(2, Integer.parseInt(textFieldBookingNumber.getText()));
@@ -448,11 +484,13 @@ public class Voucher extends JFrame
 						pst.setInt(4, Integer.parseInt(spinnerPassenger.getValue().toString()));
 						pst.setInt(5, Integer.parseInt(spinnerNumOfRoom.getValue().toString()));					
 						pst.setInt(6, Integer.parseInt(spinnerNight.getValue().toString()));
-						pst.setString(7, comboBoxRoomType.getSelectedItem().toString());
-						pst.setString(8, ""+(d.getMonth()+1)+"/"+d.getDate()+"/"+(d.getYear()+1900));
-						pst.setString(9, comboBoxManifest.getSelectedItem().toString());
-						pst.setString(10, meal);
-						pst.setString(11, textAreaService.getText());
+						pst.setString(7, comboBoxRoomSize.getSelectedItem().toString());
+						pst.setString(8, comboBoxRoomType.getSelectedItem().toString());
+						pst.setString(9, ""+(d.getMonth()+1)+"/"+d.getDate()+"/"+(d.getYear()+1900));
+						pst.setString(10, comboBoxVendors.getSelectedItem().toString());
+						pst.setString(11, meal);
+						pst.setString(12, textAreaService.getText());
+						pst.setString(13, issueDate);
 					}
 					else
 					{
@@ -463,9 +501,10 @@ public class Voucher extends JFrame
 						pst.setString(3, comboBoxType.getSelectedItem().toString());
 						pst.setInt(4, Integer.parseInt(spinnerPassenger.getValue().toString()));
 						pst.setString(5, ""+(d.getMonth()+1)+"/"+d.getDate()+"/"+(d.getYear()+1900));
-						pst.setString(6, comboBoxManifest.getSelectedItem().toString());
+						pst.setString(6, comboBoxVendors.getSelectedItem().toString());
 						pst.setString(7, meal);
 						pst.setString(8, textAreaService.getText());
+						pst.setString(9, issueDate);
 					}
 					
 					JOptionPane.showMessageDialog(null, "Voucher Created.");
@@ -487,19 +526,14 @@ public class Voucher extends JFrame
 				refreshTable();
 			}
 		});
-		btnCreate.setBounds(10, 490, 90, 25);
+		btnCreate.setBounds(10, 124, 90, 25);
 		getContentPane().add(btnCreate);
-		
-		JLabel lblRoomType = new JLabel("Room Type:");
-		lblRoomType.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblRoomType.setBounds(10, 90, 90, 20);
-		getContentPane().add(lblRoomType);
 		
 		comboBoxRoomType = new JComboBox();
 		comboBoxRoomType.setModel(new DefaultComboBoxModel(new String[] {"Deluxe Room", "Deluxe City View Room", "Deluxe River View Room", "Premium Room", "Superior Room"}));
 		comboBoxRoomType.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		comboBoxRoomType.setEditable(true);
-		comboBoxRoomType.setBounds(100, 90, 110, 23);
+		comboBoxRoomType.setBounds(622, 45, 200, 23);
 		getContentPane().add(comboBoxRoomType);
 		
 		JButton btnClear = new JButton("Clear");
@@ -508,7 +542,7 @@ public class Voucher extends JFrame
 				clear();			
 			}
 		});
-		btnClear.setBounds(111, 490, 90, 25);
+		btnClear.setBounds(110, 124, 90, 25);
 		getContentPane().add(btnClear);
 		
 		btnUpdate = new JButton("Update");
@@ -518,7 +552,22 @@ public class Voucher extends JFrame
 				if(!checkValid())return;
 				
 				int action = JOptionPane.showConfirmDialog(null, "Do you want to update "+voucherID+"?", "Update", JOptionPane.YES_NO_OPTION);
+				btnDelete.setEnabled(false);
+				btnUpdate.setEnabled(false);
 				if(action==1)return;
+				
+					String issueDate = "";
+					if(chckbxIssueDate.isSelected())
+					{
+						Date today = Calendar.getInstance().getTime();
+						issueDate =(today.getMonth()+1)+"/"+today.getDate()+"/"+(today.getYear()+1900);
+					}
+					else
+					{
+						Date selectedDate = datePickerIssueDate.getDate();
+						issueDate =(selectedDate.getMonth()+1)+"/"+selectedDate.getDate()+"/"+(selectedDate.getYear()+1900);
+					}
+
 					Date d = datePickerCheckIn.getDate();
 					String meal = "";
 					if(chckbxBreakfast.isSelected())
@@ -531,14 +580,14 @@ public class Voucher extends JFrame
 					{
 						try{
 							String query = "Update Vouchers set VoucherID='"+voucherID+"' ,VoucherType='"+comboBoxType.getSelectedItem()+"',"
-									+ " RoomType='"+comboBoxRoomType.getSelectedItem()+"' ,NumOfPax='"+spinnerPassenger.getValue()+"' ,NumOfNight='"+spinnerNight.getValue()
-									+"' ,Date='"+""+(d.getMonth()+1)+"/"+d.getDate()+"/"+(d.getYear()+1900)+"' ,Vendor='"+comboBoxManifest.getSelectedItem()
-									+"' ,Meal='"+meal+"' ,Service='"+textAreaService.getText()+"' where VoucherID='"+voucherID+"'";
+									+ " RoomType='"+comboBoxRoomType.getSelectedItem()+  "' ,NumOfPax='"+spinnerPassenger.getValue()+"' ,NumOfNight='"+spinnerNight.getValue()
+									+"' ,Date='"+""+(d.getMonth()+1)+"/"+d.getDate()+"/"+(d.getYear()+1900)+"' ,Vendor='"+comboBoxVendors.getSelectedItem()
+									+"' ,Meal='"+meal+"' ,Service='"+textAreaService.getText()+"' ,IssueDate='"+issueDate+"'where VoucherID='"+voucherID+"'";
 							PreparedStatement pst = connection.prepareStatement(query);
 	
 							pst.execute();
 							
-							JOptionPane.showMessageDialog(null, "Data Updated");
+							JOptionPane.showMessageDialog(null, "Voucher Updated");
 							
 							pst.close();
 							
@@ -549,8 +598,8 @@ public class Voucher extends JFrame
 						try{
 							String query = "Update Vouchers set VoucherID='"+voucherID+"' ,VoucherType='"+comboBoxType.getSelectedItem()+"',"
 									+ " RoomType='"+""+"' ,NumOfPax='"+spinnerPassenger.getValue()+"' ,NumOfNight='"+""
-									+"' ,Date='"+""+(d.getMonth()+1)+"/"+d.getDate()+"/"+(d.getYear()+1900)+"' ,Vendor='"+comboBoxManifest.getSelectedItem()
-									+"' ,Meal='"+meal+"' ,Serivce='"+textAreaService.getText()+"' where VoucherID='"+voucherID+"'";
+									+"' ,Date='"+""+(d.getMonth()+1)+"/"+d.getDate()+"/"+(d.getYear()+1900)+"' ,Vendor='"+comboBoxVendors.getSelectedItem()
+									+"' ,Meal='"+meal+"' ,Service='"+textAreaService.getText()+"' ,IssueDate='"+issueDate+"'where VoucherID='"+voucherID+"'";
 							PreparedStatement pst = connection.prepareStatement(query);
 	
 							pst.execute();
@@ -564,7 +613,7 @@ public class Voucher extends JFrame
 				refreshTable();
 			}
 		});
-		btnUpdate.setBounds(10, 525, 90, 25);
+		btnUpdate.setBounds(210, 124, 90, 25);
 		getContentPane().add(btnUpdate);
 		
 		btnDelete = new JButton("Delete");
@@ -572,6 +621,8 @@ public class Voucher extends JFrame
 		btnDelete.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int action = JOptionPane.showConfirmDialog(null, "Did you try updating voucher? \nDo you really want to delete this voucher?", "Delete", JOptionPane.YES_NO_OPTION);
+				btnDelete.setEnabled(false);
+				btnUpdate.setEnabled(false);
 				if(action==0){
 					try{
 						
@@ -585,37 +636,76 @@ public class Voucher extends JFrame
 					}
 					refreshTable();
 				}
-				btnDelete.setEnabled(false);
 			}
 		});
-		btnDelete.setBounds(111, 525, 90, 25);
+		btnDelete.setBounds(310, 124, 90, 25);
 		getContentPane().add(btnDelete);
 		
 		chckbxBreakfast = new JCheckBox("Breakfast");
 		chckbxBreakfast.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		chckbxBreakfast.setBounds(10, 290, 97, 23);
+		chckbxBreakfast.setBounds(842, 44, 100, 23);
 		getContentPane().add(chckbxBreakfast);
 		
 		chckbxLunch = new JCheckBox("Lunch");
 		chckbxLunch.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		chckbxLunch.setBounds(10, 310, 97, 23);
+		chckbxLunch.setBounds(985, 44, 100, 23);
 		getContentPane().add(chckbxLunch);
 		
 		chckbxDinner = new JCheckBox("Dinner");
 		chckbxDinner.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		chckbxDinner.setBounds(10, 330, 97, 23);
+		chckbxDinner.setBounds(1120, 44, 100, 23);
 		getContentPane().add(chckbxDinner);
 		
-		JLabel lblNumOfRoom = new JLabel("# of Room:");
-		lblNumOfRoom.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblNumOfRoom.setBounds(110, 284, 80, 20);
-		getContentPane().add(lblNumOfRoom);
-		
 		spinnerNumOfRoom = new JSpinner();
+		spinnerNumOfRoom.setValue(1);
+		spinnerNumOfRoom.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if(Integer.parseInt(spinnerNumOfRoom.getValue().toString()) < 1)
+					spinnerNumOfRoom.setValue(1);
+			}
+		});
 		spinnerNumOfRoom.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		spinnerNumOfRoom.setBounds(100, 320, 110, 23);
+		spinnerNumOfRoom.setBounds(340, 45, 50, 23);
 		getContentPane().add(spinnerNumOfRoom);
 		
+		comboBoxRoomSize = new JComboBox();
+		comboBoxRoomSize.setEditable(true);
+		comboBoxRoomSize.setModel(new DefaultComboBoxModel(new String[] {"Twin"}));
+		comboBoxRoomSize.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		comboBoxRoomSize.setBounds(411, 45, 200, 23);
+		getContentPane().add(comboBoxRoomSize);
+		
+		datePickerIssueDate = new JXDatePicker();
+		datePickerIssueDate.setVisible(false);	
+		datePickerIssueDate.getEditor().setFont(new Font("Tahoma", Font.PLAIN, 11));
+		datePickerIssueDate.setBounds(995, 115, 225, 20);
+		getContentPane().add(datePickerIssueDate);
+				
+		lblIssueDate = new JLabel("Issue Date:");
+		lblIssueDate.setBounds(1085, 115, 69, 17);
+		getContentPane().add(lblIssueDate);
+		lblIssueDate.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		
+		chckbxIssueDate = new JCheckBox("today");
+		chckbxIssueDate.setBounds(1160, 112, 61, 25);
+		getContentPane().add(chckbxIssueDate);
+		chckbxIssueDate.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if(chckbxIssueDate.isSelected())
+					chckbxIssueDate.setSelected(false);
+				else
+					chckbxIssueDate.setSelected(true);
+				chckbxIssueDate.setVisible(false);
+				
+				datePickerIssueDate.setVisible(true);
+				lblIssueDate.setLocation(900, 115);
+			}
+		});
+		
+		chckbxIssueDate.setSelected(true);
+		chckbxIssueDate.setFont(new Font("Tahoma", Font.PLAIN, 14));
+
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 		
@@ -657,6 +747,8 @@ public class Voucher extends JFrame
 			public void actionPerformed(ActionEvent e) {
 				if(textFieldBookingNumber.getText().equals("")) return;
 
+				if(tableVoucher.getRowCount() < 1) return;
+				
 				int booking = Integer.parseInt(textFieldBookingNumber.getText());
 				
 				chooser = new JFileChooser(); 
@@ -687,7 +779,7 @@ public class Voucher extends JFrame
 		menuBar.add(mnAbout);
 
 		
-		loadManifest();
+		loadVendors();
 	}
 	
 	public void refreshTable()
@@ -715,58 +807,64 @@ public class Voucher extends JFrame
 	public void clear()
 	{
 		comboBoxRoomType.setSelectedItem("");
-		spinnerPassenger.setValue(0);
-		spinnerNight.setValue(0);
-		spinnerNumOfRoom.setValue(0);
+		spinnerPassenger.setValue(1);
+		spinnerNight.setValue(1);
+		spinnerNumOfRoom.setValue(1);
 		datePickerCheckIn.setDate(null);
-		comboBoxManifest.setSelectedItem("");
+		comboBoxVendors.setSelectedItem("");
 		textAreaService.setText("");
 		chckbxDinner.setSelected(false);
 		chckbxBreakfast.setSelected(false);
 		chckbxLunch.setSelected(false);
+		comboBoxRoomSize.setSelectedItem("");
+		datePickerIssueDate.setVisible(false);
+		datePickerIssueDate.setDate(null);
+		chckbxIssueDate.setVisible(true);
+		chckbxIssueDate.setSelected(true);
+		lblIssueDate.setLocation(1085, 115);
 	}
 	
-	public void loadManifest()
+	public void loadVendors()
 	{
 		// load manifest comboBoxType
-		String column = "", table = "";
+		String code = "", name = "", table = "";
 		if(comboBoxType.getSelectedItem().equals("Hotel")){
-			column = "HotelCode";
+			code = "HotelCode";
+			name = "HotelName";
 			table = "Hotels";
 		}
 		else{
-			column = "LSCode";
+			code = "LSCode";
+			name = "LSName";
 			table = "Vendors";
 		}
+		
+		vendorList = new ArrayList<>();
+		vendorList.add("");
 		try{				
 			
-			String query = "select "+column+" from "+table;
+			String query = "select "+code+","+name+" from "+table;
 			PreparedStatement pst = connection.prepareStatement(query);
 			ResultSet rs = pst.executeQuery();
 
-			int count = 0;
-			
 			while(rs.next())
-				count++;
-			String[] arr = new String[count+1];
-			rs = pst.executeQuery();
-			count = 1;
-			arr[0] = "";
-			while(rs.next()){
-				arr[count] = rs.getString(column);
-				count++;
+			{
+				String c = rs.getString(code);
+				String n = rs.getString(name);
+				vendorList.add(c+ " (" + n+")");
 			}
-			comboBoxManifest.setModel(new JComboBox(arr).getModel());
 			
 			pst.close();
 			rs.close();
 		}catch(Exception e1){
 			//e1.printStackTrace();
 		}
+		
+
 	}
 	
 	public boolean checkValid()
-	{
+	{		
 		if(comboBoxType.getSelectedItem().toString().equals("Hotel"))
 		{
 			if(Integer.parseInt(spinnerNight.getValue().toString()) <= 0)
@@ -783,16 +881,25 @@ public class Voucher extends JFrame
 			{
 				JOptionPane.showMessageDialog(null, "Voucher Info Incomplete!", "Exception", JOptionPane.WARNING_MESSAGE);
 				return false;
-			}
-				
+			}	
 		}
 
 		if(Integer.parseInt(spinnerPassenger.getValue().toString()) == 0 ||
 					   datePickerCheckIn.getDate() == null ||
-					   comboBoxManifest.getSelectedItem() == null ||
-					   comboBoxManifest.getSelectedItem().equals(""))
+					   comboBoxVendors.getSelectedItem() == null ||
+					   comboBoxVendors.getSelectedItem().equals(""))
 		{
 			JOptionPane.showMessageDialog(null, "Voucher Info Incomplete!", "Exception", JOptionPane.WARNING_MESSAGE);
+			return false;
+		}
+		
+		System.out.println(chckbxIssueDate.isSelected());
+		System.out.println(datePickerIssueDate.getDate());
+		
+		
+		if(chckbxIssueDate.isSelected() == false && datePickerIssueDate.getDate() == null)
+		{
+			JOptionPane.showMessageDialog(null, "You Must Select an Issue Date", "Exception", JOptionPane.WARNING_MESSAGE);
 			return false;
 		}
 		

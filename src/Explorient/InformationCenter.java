@@ -1,6 +1,5 @@
 package Explorient;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
 
@@ -17,8 +16,6 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
-
 import java.awt.event.ItemListener;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -29,8 +26,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Date;
 import java.awt.event.ItemEvent;
 import javax.swing.JLabel;
 import java.awt.Font;
@@ -43,8 +38,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import javax.swing.JMenuItem;
 
 public class InformationCenter extends JFrame {
